@@ -32,7 +32,20 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		}
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			_ = claims
+			userRole, roleExists := claims["role"].(string)
+			if !roleExists {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Role claim missing in token"})
+				return
+			}
+
+			userEmail, emailExists := claims["email"].(string)
+			if !emailExists {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Email claim missing in token"})
+				return
+			}
+
+			c.Set("userRole", userRole)
+			c.Set("userEmail", userEmail)
 		} else {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			return

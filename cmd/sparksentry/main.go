@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"core-api/internal/app"
+	"core-api/internal/app/handlers"
 	"core-api/internal/domain/services"
 	"core-api/internal/infrastructure/database"
 	"core-api/internal/infrastructure/repository"
-	"core-api/internal/interfaces/handlers"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"log"
@@ -35,14 +35,18 @@ func main() {
 	database.InitDB()
 
 	userRepo := repository.NewUserRepository(database.DB)
+	accountRepo := repository.NewAccountRepository(database.DB)
 
 	authService := services.NewAuthService(*userRepo)
 	authHandler := handlers.NewAuthHandler(authService)
 
-	accountService := services.NewAccountService(*userRepo)
+	accountService := services.NewAccountService(*userRepo, *accountRepo)
 	accountHandler := handlers.NewAccountHandler(accountService)
 
-	router := app.SetupRouter(authHandler, accountHandler)
+	userService := services.NewUserService(*userRepo, *accountRepo)
+	userHandler := handlers.NewUserHandler(userService)
+
+	router := app.SetupRouter(authHandler, accountHandler, userHandler)
 
 	srv := &http.Server{
 		Addr:    ":8080",

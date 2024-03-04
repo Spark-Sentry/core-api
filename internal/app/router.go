@@ -1,20 +1,17 @@
 package app
 
 import (
-	"core-api/internal/interfaces/handlers"
-	"core-api/pkg/middleware"
+	"core-api/internal/app/handlers"
+	"core-api/internal/app/middleware"
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.AccountHandler) *gin.Engine {
+func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.AccountHandler, userHandler *handlers.UserHandler) *gin.Engine {
 	router := gin.Default()
 
 	apiV1 := router.Group("/api/v1")
 	{
 		apiV1.POST("/login", authHandler.Login)
-		apiV1.POST("/register", authHandler.Register)
-		router.POST("/users/accounts", accountHandler.AssociateUserToAccount)
-		router.POST("/accounts", accountHandler.CreateAccount)
 
 		authenticatedRoutes := apiV1.Group("/")
 		authenticatedRoutes.Use(middleware.JWTAuthMiddleware())
@@ -24,6 +21,10 @@ func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.Acc
 					"message": "Accès sécurisé aux données réussi",
 				})
 			})
+			authenticatedRoutes.POST("/register", authHandler.Register)
+			authenticatedRoutes.GET("/users/me", userHandler.UsersMe)
+			authenticatedRoutes.POST("/accounts", accountHandler.CreateAccount)
+			authenticatedRoutes.POST("/accounts/users", accountHandler.AssociateUserToAccount)
 		}
 	}
 

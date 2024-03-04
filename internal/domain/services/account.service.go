@@ -6,12 +6,14 @@ import (
 )
 
 type AccountService struct {
-	userRepo repository.UserRepository
+	userRepo    repository.UserRepository
+	accountRepo repository.AccountRepository
 }
 
-func NewAccountService(userRepo repository.UserRepository) *AccountService {
+func NewAccountService(userRepo repository.UserRepository, accountRepo repository.AccountRepository) *AccountService {
 	return &AccountService{
-		userRepo: userRepo,
+		userRepo:    userRepo,
+		accountRepo: accountRepo,
 	}
 }
 
@@ -20,5 +22,5 @@ func (s *AccountService) AssociateUserToAccount(userID, accountID uint) error {
 }
 
 func (s *AccountService) CreateAccount(account *entities.Account) error {
-	return s.CreateAccount(account)
+	return s.accountRepo.Create(account)
 }

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"core-api/internal/app/dto"
 	"core-api/internal/domain/entities"
 	"core-api/internal/domain/services"
 	"github.com/gin-gonic/gin"
@@ -18,10 +19,23 @@ func NewAccountHandler(accountService *services.AccountService) *AccountHandler 
 }
 
 func (h *AccountHandler) CreateAccount(c *gin.Context) {
-	var account entities.Account
-	if err := c.ShouldBindJSON(&account); err != nil {
+	var req dto.CreateAccountRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	userRole, exists := c.Get("userRole")
+	if !exists || userRole != "superadmin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Requires superadmin role"})
+		return
+	}
+
+	account := entities.Account{
+		Name:         req.Name,
+		ContactEmail: req.ContactEmail,
+		ContactPhone: req.ContactPhone,
+		Plan:         req.Plan,
 	}
 
 	if err := h.accountService.CreateAccount(&account); err != nil {
@@ -33,10 +47,13 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 }
 
 func (h *AccountHandler) AssociateUserToAccount(c *gin.Context) {
-	var request struct {
-		UserID    uint `json:"userId"`
-		AccountID uint `json:"accountId"`
+	userRole, exists := c.Get("userRole")
+	if !exists || userRole != "superadmin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Requires superadmin role"})
+		return
 	}
+
+	var request dto.AssociateUserAccountRequest
 	if err := c.BindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return

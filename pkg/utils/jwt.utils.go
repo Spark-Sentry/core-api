@@ -2,7 +2,6 @@ package utils
 
 import (
 	"core-api/internal/domain/entities"
-	"fmt"
 	"github.com/golang-jwt/jwt"
 	"os"
 	"time"
@@ -18,7 +17,6 @@ type Claims struct {
 
 func CreateJwt(user *entities.User) (string, error) {
 	expirationTime := time.Now().Add(24 * time.Hour)
-	fmt.Println(user.Account)
 	claims := &Claims{
 		Email:       user.Email,
 		Role:        user.Role,

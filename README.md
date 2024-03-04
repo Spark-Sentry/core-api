@@ -14,28 +14,38 @@ To set up and run the project locally, follow these steps:
 2. Ensure you have Go installed on your machine.
 3. Install dependencies by running `go mod tidy`.
 4. Configure the necessary environment variables in a `.env` file based on the `.env.example` file.
-5. Launch the application with `go run main.go`.
+5. Launch the application with `go run ./cmd/sparksentry/main.go`.
 
 ## API Routes :world_map:
 
 The SparkSentry API exposes the following routes:
 
 ### Authentication
-
 - `POST /api/v1/login`: Log in to the application and receive a JWT token. :key:
 
-### User Management
-
+### User Management (JWT token required)
 - `POST /api/v1/register`: Register a new user into the system. :bust_in_silhouette:
-- `POST /api/v1/associateUserToAccount`: Associate an existing user to an account. :link:
+- `GET /api/v1/users/me`: Get the authenticated user's information. :bust_in_silhouette:
 
-### Account Management
-
+### Account Management (JWT token required)
 - `POST /api/v1/accounts`: Create a new account. :office:
+- `POST /api/v1/accounts/users`: Associate an existing user to an account. :link:
 
 ### Protected Routes (JWT token required)
-
 - `GET /api/v1/securedata`: Access secure data after authentication. :lock:
+
+## Environment Variables :key:
+
+Ensure the following environment variables are set in your `.env` file:
+
+- `DB_USER`: Your database username
+- `DB_PASSWORD`: Your database password
+- `DB_NAME`: Your database name
+- `DB_HOST`: Your database host, e.g., localhost
+- `DB_PORT`: Your database port, e.g., 5432 for PostgreSQL
+- `JWT_SECRET_KEY`: A secret key for signing JWTs
+- `USER_ADMIN_EMAIL`: Email for the initial superadmin user
+- `USER_ADMIN_PWD`: Password for the initial superadmin user
 
 ## Contribution :handshake:
 
