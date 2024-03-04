@@ -4,6 +4,7 @@ import (
 	"context"
 	"core-api/internal/app"
 	"core-api/internal/domain/services"
+	"core-api/internal/infrastructure/database"
 	"core-api/internal/infrastructure/repository"
 	"core-api/internal/interfaces/handlers"
 	"github.com/gin-gonic/gin"
@@ -31,14 +32,17 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	repository.InitDB()
+	database.InitDB()
 
-	userRepo := repository.NewUserRepository(repository.DB)
+	userRepo := repository.NewUserRepository(database.DB)
 
 	authService := services.NewAuthService(*userRepo)
-
 	authHandler := handlers.NewAuthHandler(authService)
-	router := app.SetupRouter(authHandler)
+
+	accountService := services.NewAccountService(*userRepo)
+	accountHandler := handlers.NewAccountHandler(accountService)
+
+	router := app.SetupRouter(authHandler, accountHandler)
 
 	srv := &http.Server{
 		Addr:    ":8080",

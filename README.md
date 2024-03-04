@@ -4,7 +4,7 @@ Welcome to the SparkSentry API repository, an innovative energy management syste
 
 ## Features :star:
 
-SparkSentry offers a robust platform for energy data collection and analysis, enabling users to monitor and optimize their energy consumption efficiently.
+SparkSentry offers a robust platform for energy data collection and analysis, enabling users to monitor and optimize their energy consumption efficiently. It now supports flexible user-account associations and account creation, catering to a wide range of energy management needs.
 
 ## Setup :gear:
 
@@ -23,6 +23,15 @@ The SparkSentry API exposes the following routes:
 ### Authentication
 
 - `POST /api/v1/login`: Log in to the application and receive a JWT token. :key:
+
+### User Management
+
+- `POST /api/v1/register`: Register a new user into the system. :bust_in_silhouette:
+- `POST /api/v1/associateUserToAccount`: Associate an existing user to an account. :link:
+
+### Account Management
+
+- `POST /api/v1/accounts`: Create a new account. :office:
 
 ### Protected Routes (JWT token required)
 

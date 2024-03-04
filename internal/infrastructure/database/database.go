@@ -1,4 +1,4 @@
-package repository
+package database
 
 import (
 	"core-api/internal/domain/entities"
@@ -35,5 +35,5 @@ func InitDB() {
 	DB = db
 
 	log.Println("🔌 Connected to the database successfully.")
-	db.AutoMigrate(&entities.User{}, &entities.Account{})
+	db.AutoMigrate(&entities.User{}, &entities.Account{}, &entities.Building{}, &entities.Contract{})
 }
