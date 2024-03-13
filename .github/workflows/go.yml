@@ -1,0 +1,34 @@
+name: Go Build and Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18  # Utilisez la version de Go de votre projet
+
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Get dependencies
+        run: go mod download
+
+      - name: Build
+        run: go build -v ./cmd/sparksentry/main.go
+
+      - name: Test
+        run: go test -v ./...
+
+      - name: Check for uncommitted changes (e.g., go.mod, go.sum)
+        run: |
+          git diff --exit-code
