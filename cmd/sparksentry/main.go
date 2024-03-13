@@ -34,19 +34,27 @@ func main() {
 
 	database.InitDB()
 
+	// Init repo
 	userRepo := repository.NewUserRepository(database.DB)
 	accountRepo := repository.NewAccountRepository(database.DB)
+	buildingRepo := repository.NewBuildingRepository(database.DB)
 
+	// Auth features
 	authService := services.NewAuthService(*userRepo)
 	authHandler := handlers.NewAuthHandler(authService)
 
+	// Account features
 	accountService := services.NewAccountService(*userRepo, *accountRepo)
 	accountHandler := handlers.NewAccountHandler(accountService)
 
+	// User features
 	userService := services.NewUserService(*userRepo, *accountRepo)
 	userHandler := handlers.NewUserHandler(userService)
 
-	router := app.SetupRouter(authHandler, accountHandler, userHandler)
+	buildingService := services.NewBuildingService(*buildingRepo)
+	buildingHandler := handlers.NewBuildingHandler(accountService, buildingService)
+
+	router := app.SetupRouter(authHandler, accountHandler, userHandler, buildingHandler)
 
 	srv := &http.Server{
 		Addr:    ":8080",

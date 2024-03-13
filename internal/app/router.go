@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.AccountHandler, userHandler *handlers.UserHandler) *gin.Engine {
+func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.AccountHandler, userHandler *handlers.UserHandler, buildingHandler *handlers.BuildingHandler) *gin.Engine {
 	router := gin.Default()
 
 	apiV1 := router.Group("/api/v1")
@@ -25,6 +25,11 @@ func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.Acc
 			authenticatedRoutes.GET("/users/me", userHandler.UsersMe)
 			authenticatedRoutes.POST("/accounts", accountHandler.CreateAccount)
 			authenticatedRoutes.POST("/accounts/users", accountHandler.AssociateUserToAccount)
+
+			// Buildings
+			authenticatedRoutes.POST("/buildings", buildingHandler.HandleCreateBuilding)
+			authenticatedRoutes.GET("/buildings", buildingHandler.GetAllBuildings)
+
 		}
 	}
 

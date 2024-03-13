@@ -44,8 +44,15 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 				return
 			}
 
+			accountId, accountExists := claims["accountId"].(float64)
+			if !accountExists {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "accountId claim missing in token"})
+				return
+			}
+
 			c.Set("userRole", userRole)
 			c.Set("userEmail", userEmail)
+			c.Set("accountId", accountId)
 		} else {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			return
