@@ -34,6 +34,11 @@ The SparkSentry API exposes the following routes:
 ### Protected Routes (JWT token required)
 - `GET /api/v1/securedata`: Access secure data after authentication. :lock:
 
+### Building Management (JWT token required)
+- `POST /api/v1/buildings`: Create a new building with areas. :house_with_garden:
+- `GET /api/v1/buildings`: Retrieve all buildings associated with the authenticated account's ID. :houses:
+
+
 ## Environment Variables :key:
 
 Ensure the following environment variables are set in your `.env` file:

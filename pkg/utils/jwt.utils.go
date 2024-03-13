@@ -12,6 +12,7 @@ type Claims struct {
 	Email       string `json:"email"`
 	Role        string `json:"role"`
 	AccountName string `json:"accountName"`
+	AccountId   uint   `json:"accountId"`
 	jwt.StandardClaims
 }
 
@@ -21,6 +22,7 @@ func CreateJwt(user *entities.User) (string, error) {
 		Email:       user.Email,
 		Role:        user.Role,
 		AccountName: user.Account.Name,
+		AccountId:   user.Account.ID,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
