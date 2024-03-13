@@ -9,11 +9,12 @@ import (
 // BuildingService contains the business logic for Building entities.
 type BuildingService struct {
 	buildingRepo repository.BuildingRepository
+	systemRepo   repository.SystemRepository
 }
 
 // NewBuildingService creates a new instance of BuildingService.
-func NewBuildingService(buildingRepo repository.BuildingRepository) *BuildingService {
-	return &BuildingService{buildingRepo: buildingRepo}
+func NewBuildingService(buildingRepo repository.BuildingRepository, systemRepo repository.SystemRepository) *BuildingService {
+	return &BuildingService{buildingRepo: buildingRepo, systemRepo: systemRepo}
 }
 
 // CreateBuilding creates a new Building with at least one Area from a DTO.
@@ -40,4 +41,17 @@ func (s *BuildingService) CreateBuilding(req *dto.CreateBuildingRequest, account
 
 func (s *BuildingService) GetAllBuildings(accountID uint) ([]entities.Building, error) {
 	return s.buildingRepo.FindAllByAccountID(accountID)
+}
+
+func (s *BuildingService) AddSystemToBuilding(buildingID uint, systemData *entities.System) error {
+	system := &entities.System{
+		BuildingID:  buildingID,
+		Name:        systemData.Name,
+		Description: systemData.Description,
+	}
+	return s.systemRepo.CreateSystem(system)
+}
+
+func (s *BuildingService) GetSystemsByBuildingID(buildingID uint) ([]entities.System, error) {
+	return s.systemRepo.FindByBuildingID(buildingID)
 }

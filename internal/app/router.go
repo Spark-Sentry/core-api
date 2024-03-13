@@ -18,7 +18,7 @@ func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.Acc
 		{
 			authenticatedRoutes.GET("/securedata", func(c *gin.Context) {
 				c.JSON(200, gin.H{
-					"message": "Accès sécurisé aux données réussi",
+					"message": "Secured page",
 				})
 			})
 			authenticatedRoutes.POST("/register", authHandler.Register)
@@ -29,6 +29,9 @@ func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.Acc
 			// Buildings
 			authenticatedRoutes.POST("/buildings", buildingHandler.HandleCreateBuilding)
 			authenticatedRoutes.GET("/buildings", buildingHandler.GetAllBuildings)
+			// Buildings - System
+			authenticatedRoutes.POST("/buildings/:building_id/systems", buildingHandler.AddSystem)
+			authenticatedRoutes.GET("/buildings/:building_id/systems", buildingHandler.GetSystemsByBuildingID)
 
 		}
 	}

@@ -2,11 +2,13 @@ package handlers
 
 import (
 	"core-api/internal/app/dto"
+	"core-api/internal/domain/entities"
 	"core-api/internal/domain/services"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"reflect"
+	"strconv"
 )
 
 type BuildingHandler struct {
@@ -71,4 +73,39 @@ func (h *BuildingHandler) GetAllBuildings(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, buildings)
+}
+
+func (h *BuildingHandler) AddSystem(c *gin.Context) {
+	buildingID, _ := strconv.Atoi(c.Param("building_id"))
+	var systemData entities.System
+	if err := c.ShouldBindJSON(&systemData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := h.buildingService.AddSystemToBuilding(uint(buildingID), &systemData)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add system to building"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "System added successfully"})
+}
+
+func (h *BuildingHandler) GetSystemsByBuildingID(c *gin.Context) {
+	// Extraire le building_id du chemin
+	buildingID, err := strconv.Atoi(c.Param("building_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid building ID"})
+		return
+	}
+
+	// Utiliser le service pour récupérer les Systems associés
+	systems, err := h.buildingService.GetSystemsByBuildingID(uint(buildingID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve systems"})
+		return
+	}
+
+	c.JSON(http.StatusOK, systems)
 }

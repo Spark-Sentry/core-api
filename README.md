@@ -4,7 +4,7 @@ Welcome to the SparkSentry API repository, an innovative energy management syste
 
 ## Features :star:
 
-SparkSentry offers a robust platform for energy data collection and analysis, enabling users to monitor and optimize their energy consumption efficiently. It now supports flexible user-account associations and account creation, catering to a wide range of energy management needs.
+SparkSentry offers a robust platform for energy data collection and analysis, enabling users to monitor and optimize their energy consumption efficiently. It now supports flexible user-account associations, account creation, and detailed management of buildings, systems, and equipment, catering to a wide range of energy management needs.
 
 ## Setup :gear:
 
@@ -31,13 +31,13 @@ The SparkSentry API exposes the following routes:
 - `POST /api/v1/accounts`: Create a new account. :office:
 - `POST /api/v1/accounts/users`: Associate an existing user to an account. :link:
 
-### Protected Routes (JWT token required)
-- `GET /api/v1/securedata`: Access secure data after authentication. :lock:
-
 ### Building Management (JWT token required)
 - `POST /api/v1/buildings`: Create a new building with areas. :house_with_garden:
 - `GET /api/v1/buildings`: Retrieve all buildings associated with the authenticated account's ID. :houses:
 
+### System Management (JWT token required)
+- `POST /api/v1/buildings/:building_id/systems`: Add a new system to a specific building. :gear:
+- `GET /api/v1/buildings/:building_id/systems`: Retrieve all systems associated with a specific building's ID. :wrench:
 
 ## Environment Variables :key:
 
