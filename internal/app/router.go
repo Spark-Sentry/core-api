@@ -30,8 +30,9 @@ func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.Acc
 			authenticatedRoutes.POST("/buildings", buildingHandler.HandleCreateBuilding)
 			authenticatedRoutes.GET("/buildings", buildingHandler.GetAllBuildings)
 			// Buildings - System
-			authenticatedRoutes.POST("/buildings/:building_id/systems", buildingHandler.AddSystem)
-			authenticatedRoutes.GET("/buildings/:building_id/systems", buildingHandler.GetSystemsByBuildingID)
+			authenticatedRoutes.POST("/buildings/:building_id/areas/:area_id/systems", buildingHandler.AddSystem)
+			authenticatedRoutes.GET("/buildings/:building_id/areas/:area_id/systems", buildingHandler.GetSystemsByAreaID)
+			authenticatedRoutes.POST("/systems/:system_id/equipments", buildingHandler.AddEquipmentToSystem)
 
 		}
 	}

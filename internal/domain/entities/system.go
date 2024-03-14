@@ -6,7 +6,7 @@ type System struct {
 	gorm.Model
 	Name        string      `gorm:"size:255;not null"`
 	Description string      `gorm:"size:255"`
-	BuildingID  uint        `gorm:"not null"`
-	Building    Building    `gorm:"foreignKey:BuildingID"`
+	AreaID      uint        `gorm:"not null"`
+	Area        Area        `gorm:"foreignKey:AreaID"`
 	Equipments  []Equipment `gorm:"foreignKey:SystemID"`
 }

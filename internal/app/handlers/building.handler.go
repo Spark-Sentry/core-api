@@ -76,14 +76,14 @@ func (h *BuildingHandler) GetAllBuildings(c *gin.Context) {
 }
 
 func (h *BuildingHandler) AddSystem(c *gin.Context) {
-	buildingID, _ := strconv.Atoi(c.Param("building_id"))
+	areaID, _ := strconv.Atoi(c.Param("area_id"))
 	var systemData entities.System
 	if err := c.ShouldBindJSON(&systemData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	err := h.buildingService.AddSystemToBuilding(uint(buildingID), &systemData)
+	err := h.buildingService.AddSystemToArea(uint(areaID), &systemData)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add system to building"})
 		return
@@ -92,20 +92,43 @@ func (h *BuildingHandler) AddSystem(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "System added successfully"})
 }
 
-func (h *BuildingHandler) GetSystemsByBuildingID(c *gin.Context) {
-	// Extraire le building_id du chemin
-	buildingID, err := strconv.Atoi(c.Param("building_id"))
+func (h *BuildingHandler) GetSystemsByAreaID(c *gin.Context) {
+	areaID, err := strconv.Atoi(c.Param("area_id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid building ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid area ID"})
 		return
 	}
 
-	// Utiliser le service pour récupérer les Systems associés
-	systems, err := h.buildingService.GetSystemsByBuildingID(uint(buildingID))
+	systems, err := h.buildingService.GetSystemsByAreaID(uint(areaID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve systems"})
 		return
 	}
 
 	c.JSON(http.StatusOK, systems)
+}
+
+// AddEquipmentToSystem handles the POST request to add new equipment to a system.
+func (h *BuildingHandler) AddEquipmentToSystem(c *gin.Context) {
+	systemID, err := strconv.ParseUint(c.Param("system_id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid system ID"})
+		return
+	}
+
+	var equipmentDTOs []dto.EquipmentCreateDTO
+	if err := c.ShouldBindJSON(&equipmentDTOs); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	for _, equipmentDTO := range equipmentDTOs {
+		err := h.buildingService.AddEquipmentToSystem(uint(systemID), equipmentDTO)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add equipment to system"})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Equipment added successfully"})
 }

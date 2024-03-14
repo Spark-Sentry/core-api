@@ -36,8 +36,11 @@ The SparkSentry API exposes the following routes:
 - `GET /api/v1/buildings`: Retrieve all buildings associated with the authenticated account's ID. :houses:
 
 ### System Management (JWT token required)
-- `POST /api/v1/buildings/:building_id/systems`: Add a new system to a specific building. :gear:
-- `GET /api/v1/buildings/:building_id/systems`: Retrieve all systems associated with a specific building's ID. :wrench:
+- `POST /api/v1/buildings/:building_id/areas/:area_id/systems`: Add a new system to a specific area within a building. :gear:
+- `GET /api/v1/buildings/:building_id/areas/:area_id/systems`: Retrieve all systems associated with a specific area within a building's ID. :wrench:
+
+### Equipment Management (JWT token required)
+- `POST /systems/:system_id/equipments`: Add new equipment to a specific system. :hammer_and_wrench:
 
 ## Environment Variables :key:
 
@@ -51,6 +54,27 @@ Ensure the following environment variables are set in your `.env` file:
 - `JWT_SECRET_KEY`: A secret key for signing JWTs
 - `USER_ADMIN_EMAIL`: Email for the initial superadmin user
 - `USER_ADMIN_PWD`: Password for the initial superadmin user
+
+## Hot Reloading with Air :fire:
+
+This project uses [Air](https://github.com/cosmtrek/air) for hot reloading during development. Air automatically rebuilds and restarts your application when file changes in the directory are detected, making development faster and more efficient.
+
+### Getting Started with Air
+
+1. **Install Air** - If you haven't installed Air, you can do so by running:
+   ```bash
+   go install github.com/cosmtrek/air@latest
+   ```
+
+2. **Configure Air** - A default `.air.toml` configuration file is included in the project root. This file is set up to watch for file changes in your project and to rebuild your application accordingly.
+
+3. **Run Air** - Simply navigate to your project directory in the terminal and run:
+   ```bash
+   air
+   ```
+   Air will start monitoring your files for changes and will automatically rebuild and restart your application as needed.
+
+Using Air streamlines the development process by eliminating the need to manually rebuild and restart your application after making changes. Enjoy the breeze!
 
 ## Contribution :handshake:
 

@@ -8,13 +8,14 @@ import (
 
 // BuildingService contains the business logic for Building entities.
 type BuildingService struct {
-	buildingRepo repository.BuildingRepository
-	systemRepo   repository.SystemRepository
+	buildingRepo  repository.BuildingRepository
+	systemRepo    repository.SystemRepository
+	equipmentRepo repository.EquipmentRepository
 }
 
 // NewBuildingService creates a new instance of BuildingService.
-func NewBuildingService(buildingRepo repository.BuildingRepository, systemRepo repository.SystemRepository) *BuildingService {
-	return &BuildingService{buildingRepo: buildingRepo, systemRepo: systemRepo}
+func NewBuildingService(buildingRepo repository.BuildingRepository, systemRepo repository.SystemRepository, equipmentRepo repository.EquipmentRepository) *BuildingService {
+	return &BuildingService{buildingRepo: buildingRepo, systemRepo: systemRepo, equipmentRepo: equipmentRepo}
 }
 
 // CreateBuilding creates a new Building with at least one Area from a DTO.
@@ -43,15 +44,24 @@ func (s *BuildingService) GetAllBuildings(accountID uint) ([]entities.Building, 
 	return s.buildingRepo.FindAllByAccountID(accountID)
 }
 
-func (s *BuildingService) AddSystemToBuilding(buildingID uint, systemData *entities.System) error {
+func (s *BuildingService) AddSystemToArea(areaID uint, systemData *entities.System) error {
 	system := &entities.System{
-		BuildingID:  buildingID,
+		AreaID:      areaID,
 		Name:        systemData.Name,
 		Description: systemData.Description,
 	}
 	return s.systemRepo.CreateSystem(system)
 }
 
-func (s *BuildingService) GetSystemsByBuildingID(buildingID uint) ([]entities.System, error) {
-	return s.systemRepo.FindByBuildingID(buildingID)
+func (s *BuildingService) GetSystemsByAreaID(areaID uint) ([]entities.System, error) {
+	return s.systemRepo.FindByAreaID(areaID)
+}
+
+func (s *BuildingService) AddEquipmentToSystem(systemID uint, equipmentDTO dto.EquipmentCreateDTO) error {
+	equipment := entities.Equipment{
+		SystemID:    systemID,
+		Tag:         equipmentDTO.Tag,
+		Description: equipmentDTO.Description,
+	}
+	return s.equipmentRepo.AddEquipment(&equipment)
 }
