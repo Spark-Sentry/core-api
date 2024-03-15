@@ -7,6 +7,7 @@ import (
 	"core-api/internal/domain/services"
 	"core-api/internal/infrastructure/database"
 	"core-api/internal/infrastructure/repository"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"log"
@@ -38,6 +39,9 @@ func main() {
 	userRepo := repository.NewUserRepository(database.DB)
 	accountRepo := repository.NewAccountRepository(database.DB)
 	buildingRepo := repository.NewBuildingRepository(database.DB)
+	systemRepo := repository.NewSystemRepository(database.DB)
+	equipmentRepo := repository.NewEquipmentRepository(database.DB)
+	areaRepo := repository.NewAreaRepository(database.DB)
 
 	// Auth features
 	authService := services.NewAuthService(*userRepo)
@@ -51,18 +55,18 @@ func main() {
 	userService := services.NewUserService(*userRepo, *accountRepo)
 	userHandler := handlers.NewUserHandler(userService)
 
-	buildingService := services.NewBuildingService(*buildingRepo)
-	buildingHandler := handlers.NewBuildingHandler(accountService, buildingService)
+	buildingService := services.NewBuildingService(*buildingRepo, *systemRepo, *equipmentRepo, areaRepo)
+	buildingHandler := handlers.NewBuildingHandler(accountService, &buildingService)
 
-	router := app.SetupRouter(authHandler, accountHandler, userHandler, buildingHandler)
+	router := app.SetupRouter(authHandler, accountHandler, userHandler, buildingHandler, userRepo)
 
 	srv := &http.Server{
-		Addr:    ":8080",
+		Addr:    "127.0.0.1:8080",
 		Handler: router,
 	}
 
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("❌ Listen: %s\n", err)
 		}
 	}()

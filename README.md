@@ -4,7 +4,7 @@ Welcome to the SparkSentry API repository, an innovative energy management syste
 
 ## Features :star:
 
-SparkSentry offers a robust platform for energy data collection and analysis, enabling users to monitor and optimize their energy consumption efficiently. It now supports flexible user-account associations and account creation, catering to a wide range of energy management needs.
+SparkSentry offers a robust platform for energy data collection and analysis, enabling users to monitor and optimize their energy consumption efficiently. It now supports flexible user-account associations, account creation, detailed management of buildings, areas, systems, and equipment, catering to a wide range of energy management needs.
 
 ## Setup :gear:
 
@@ -31,17 +31,35 @@ The SparkSentry API exposes the following routes:
 - `POST /api/v1/accounts`: Create a new account. :office:
 - `POST /api/v1/accounts/users`: Associate an existing user to an account. :link:
 
-### Protected Routes (JWT token required)
-- `GET /api/v1/securedata`: Access secure data after authentication. :lock:
-
 ### Building Management (JWT token required)
 - `POST /api/v1/buildings`: Create a new building with areas. :house_with_garden:
 - `GET /api/v1/buildings`: Retrieve all buildings associated with the authenticated account's ID. :houses:
 
+### Area Management (JWT token required)
+- `POST /api/v1/buildings/:building_id/areas`: Add a new area to a specific building. :park:
+- `GET /api/v1/buildings/:building_id/areas`: List all areas within a specific building. :national_park:
+- `PUT /api/v1/areas/:area_id`: Update details of a specific area. :construction:
+- `DELETE /api/v1/areas/:area_id`: Remove a specific area. :no_entry:
+
+### System Management (JWT token required)
+- `POST /api/v1/buildings/:building_id/areas/:area_id/systems`: Add a new system to a specific area within a building. :gear:
+- `GET /api/v1/buildings/:building_id/areas/:area_id/systems`: Retrieve all systems associated with a specific area within a building. :wrench:
+- `PUT /api/v1/systems/:system_id`: Update details of a specific system. :hammer_and_wrench:
+- `DELETE /api/v1/systems/:system_id`: Remove a specific system. :no_entry_sign:
+
+### Equipment Management (JWT token required)
+- `POST /systems/:system_id/equipments`: Add new equipment to a specific system. :heavy_plus_sign:
+- `GET /systems/:system_id/equipments`: List all equipments within a specific system. :clipboard:
+- `PUT /equipments/:equipment_id`: Update details of a specific piece of equipment. :memo:
+- `DELETE /equipments/:equipment_id`: Remove a specific piece of equipment. :wastebasket:
+
+## Hot Reloading with Air :fire:
+
+This project uses [Air](https://github.com/cosmtrek/air) for hot reloading during development. Air automatically rebuilds and restarts your application when file changes in the directory are detected, making development faster and more efficient.
+
+To use Air, ensure you have the `.air.toml` configuration file at the root of your project, then simply run `air` in your terminal within the project directory.
 
 ## Environment Variables :key:
-
-Ensure the following environment variables are set in your `.env` file:
 
 - `DB_USER`: Your database username
 - `DB_PASSWORD`: Your database password
