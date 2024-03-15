@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"core-api/internal/infrastructure/repository"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -9,7 +10,7 @@ import (
 	"strings"
 )
 
-func JWTAuthMiddleware() gin.HandlerFunc {
+func JWTAuthMiddleware(userRepo repository.UserRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -53,6 +54,18 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			c.Set("userRole", userRole)
 			c.Set("userEmail", userEmail)
 			c.Set("accountId", accountId)
+
+			// Récupération de l'utilisateur depuis la base de données en utilisant userEmail
+			user, err := userRepo.FindByEmail(userEmail)
+			if err != nil {
+				// Gérer l'erreur si l'utilisateur n'est pas trouvé ou si une autre erreur se produit
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user information"})
+				return
+			}
+
+			// Stocke l'objet User dans le contexte de Gin
+			c.Set("user", user)
+
 		} else {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			return

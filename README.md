@@ -4,7 +4,7 @@ Welcome to the SparkSentry API repository, an innovative energy management syste
 
 ## Features :star:
 
-SparkSentry offers a robust platform for energy data collection and analysis, enabling users to monitor and optimize their energy consumption efficiently. It now supports flexible user-account associations, account creation, and detailed management of buildings, systems, and equipment, catering to a wide range of energy management needs.
+SparkSentry offers a robust platform for energy data collection and analysis, enabling users to monitor and optimize their energy consumption efficiently. It now supports flexible user-account associations, account creation, detailed management of buildings, areas, systems, and equipment, catering to a wide range of energy management needs.
 
 ## Setup :gear:
 
@@ -35,16 +35,31 @@ The SparkSentry API exposes the following routes:
 - `POST /api/v1/buildings`: Create a new building with areas. :house_with_garden:
 - `GET /api/v1/buildings`: Retrieve all buildings associated with the authenticated account's ID. :houses:
 
+### Area Management (JWT token required)
+- `POST /api/v1/buildings/:building_id/areas`: Add a new area to a specific building. :park:
+- `GET /api/v1/buildings/:building_id/areas`: List all areas within a specific building. :national_park:
+- `PUT /api/v1/areas/:area_id`: Update details of a specific area. :construction:
+- `DELETE /api/v1/areas/:area_id`: Remove a specific area. :no_entry:
+
 ### System Management (JWT token required)
 - `POST /api/v1/buildings/:building_id/areas/:area_id/systems`: Add a new system to a specific area within a building. :gear:
-- `GET /api/v1/buildings/:building_id/areas/:area_id/systems`: Retrieve all systems associated with a specific area within a building's ID. :wrench:
+- `GET /api/v1/buildings/:building_id/areas/:area_id/systems`: Retrieve all systems associated with a specific area within a building. :wrench:
+- `PUT /api/v1/systems/:system_id`: Update details of a specific system. :hammer_and_wrench:
+- `DELETE /api/v1/systems/:system_id`: Remove a specific system. :no_entry_sign:
 
 ### Equipment Management (JWT token required)
-- `POST /systems/:system_id/equipments`: Add new equipment to a specific system. :hammer_and_wrench:
+- `POST /systems/:system_id/equipments`: Add new equipment to a specific system. :heavy_plus_sign:
+- `GET /systems/:system_id/equipments`: List all equipments within a specific system. :clipboard:
+- `PUT /equipments/:equipment_id`: Update details of a specific piece of equipment. :memo:
+- `DELETE /equipments/:equipment_id`: Remove a specific piece of equipment. :wastebasket:
+
+## Hot Reloading with Air :fire:
+
+This project uses [Air](https://github.com/cosmtrek/air) for hot reloading during development. Air automatically rebuilds and restarts your application when file changes in the directory are detected, making development faster and more efficient.
+
+To use Air, ensure you have the `.air.toml` configuration file at the root of your project, then simply run `air` in your terminal within the project directory.
 
 ## Environment Variables :key:
-
-Ensure the following environment variables are set in your `.env` file:
 
 - `DB_USER`: Your database username
 - `DB_PASSWORD`: Your database password
@@ -54,27 +69,6 @@ Ensure the following environment variables are set in your `.env` file:
 - `JWT_SECRET_KEY`: A secret key for signing JWTs
 - `USER_ADMIN_EMAIL`: Email for the initial superadmin user
 - `USER_ADMIN_PWD`: Password for the initial superadmin user
-
-## Hot Reloading with Air :fire:
-
-This project uses [Air](https://github.com/cosmtrek/air) for hot reloading during development. Air automatically rebuilds and restarts your application when file changes in the directory are detected, making development faster and more efficient.
-
-### Getting Started with Air
-
-1. **Install Air** - If you haven't installed Air, you can do so by running:
-   ```bash
-   go install github.com/cosmtrek/air@latest
-   ```
-
-2. **Configure Air** - A default `.air.toml` configuration file is included in the project root. This file is set up to watch for file changes in your project and to rebuild your application accordingly.
-
-3. **Run Air** - Simply navigate to your project directory in the terminal and run:
-   ```bash
-   air
-   ```
-   Air will start monitoring your files for changes and will automatically rebuild and restart your application as needed.
-
-Using Air streamlines the development process by eliminating the need to manually rebuild and restart your application after making changes. Enjoy the breeze!
 
 ## Contribution :handshake:
 

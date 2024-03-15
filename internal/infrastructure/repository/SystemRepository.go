@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"core-api/internal/app/dto"
 	"core-api/internal/domain/entities"
 	"gorm.io/gorm"
 )
@@ -38,4 +39,12 @@ func (r *SystemRepository) FindByAreaID(areaID uint) ([]entities.System, error) 
 // CreateEquipment creates equipment
 func (r *SystemRepository) CreateEquipment(equipment *entities.Equipment) error {
 	return r.db.Create(equipment).Error
+}
+
+func (r *SystemRepository) UpdateSystem(systemID uint, updateDTO dto.SystemUpdateDTO) error {
+	return r.db.Model(&entities.System{}).Where("id = ?", systemID).Updates(entities.System{Name: updateDTO.Name, Description: updateDTO.Description}).Error
+}
+
+func (r *SystemRepository) DeleteSystem(systemID uint) error {
+	return r.db.Delete(&entities.System{}, systemID).Error
 }

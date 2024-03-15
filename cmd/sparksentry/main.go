@@ -41,6 +41,7 @@ func main() {
 	buildingRepo := repository.NewBuildingRepository(database.DB)
 	systemRepo := repository.NewSystemRepository(database.DB)
 	equipmentRepo := repository.NewEquipmentRepository(database.DB)
+	areaRepo := repository.NewAreaRepository(database.DB)
 
 	// Auth features
 	authService := services.NewAuthService(*userRepo)
@@ -54,10 +55,10 @@ func main() {
 	userService := services.NewUserService(*userRepo, *accountRepo)
 	userHandler := handlers.NewUserHandler(userService)
 
-	buildingService := services.NewBuildingService(*buildingRepo, *systemRepo, *equipmentRepo)
-	buildingHandler := handlers.NewBuildingHandler(accountService, buildingService)
+	buildingService := services.NewBuildingService(*buildingRepo, *systemRepo, *equipmentRepo, areaRepo)
+	buildingHandler := handlers.NewBuildingHandler(accountService, &buildingService)
 
-	router := app.SetupRouter(authHandler, accountHandler, userHandler, buildingHandler)
+	router := app.SetupRouter(authHandler, accountHandler, userHandler, buildingHandler, userRepo)
 
 	srv := &http.Server{
 		Addr:    "127.0.0.1:8080",
