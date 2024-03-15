@@ -62,6 +62,26 @@ func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.Acc
 			authenticatedRoutes.PUT("/equipments/:equipment_id", buildingHandler.UpdateEquipment) // "Update details of a specific piece of equipment."
 			// Delete a specific piece of equipment
 			authenticatedRoutes.DELETE("/equipments/:equipment_id", buildingHandler.DeleteEquipment) // "Remove a specific piece of equipment."
+
+			// Parameter Management Routes
+			// authenticatedRoutes.POST("/equipments/:equipment_id/parameters", parameterHandler.CreateParameter) // "Create a new parameter for a specific piece of equipment."
+			// Creates a new parameter and associates it with a specific equipment.
+
+			// authenticatedRoutes.GET("/equipments/:equipment_id/parameters", parameterHandler.GetParametersByEquipmentID) // "Retrieve all parameters for a specific piece of equipment."
+			// Retrieves a list of all parameters associated with a specific piece of equipment.
+
+			// authenticatedRoutes.GET("/parameters/:parameter_id", parameterHandler.GetParameterByID) // "Retrieve details of a specific parameter."
+			// Retrieves detailed information about a specific parameter.
+
+			// authenticatedRoutes.PUT("/parameters/:parameter_id", parameterHandler.UpdateParameter) // "Update a specific parameter."
+			// Updates the details of an existing parameter.
+
+			// authenticatedRoutes.DELETE("/parameters/:parameter_id", parameterHandler.DeleteParameter) // "Delete a specific parameter."
+			// Deletes a specific parameter from the system.
+
+			// Additional Routes for Advanced Parameter Management
+			// Consider adding more routes if there are additional functionalities related to parameters that go beyond basic CRUD operations. For example, routes for bulk operations, searching/filtering parameters, or associating parameters with measurements might be useful depending on your application's requirements.
+
 		}
 	}
 
