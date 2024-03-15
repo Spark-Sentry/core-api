@@ -64,6 +64,8 @@ func InitDB() {
 	DB = db
 
 	log.Println("🔌 Connected to the database successfully.")
-	db.AutoMigrate(&entities.User{}, &entities.Account{}, &entities.Building{}, &entities.Area{}, &entities.Equipment{}, &entities.System{})
+	var models = []interface{}{&entities.User{}, &entities.Account{}, &entities.Building{}, &entities.Area{}, &entities.Equipment{}, &entities.System{}, &entities.Parameter{}}
+
+	db.AutoMigrate(models...)
 	createSuperAdmin(db)
 }
