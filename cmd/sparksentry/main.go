@@ -6,6 +6,7 @@ import (
 	"core-api/internal/app/handlers"
 	"core-api/internal/domain/services"
 	"core-api/internal/infrastructure/database"
+	"core-api/internal/infrastructure/kafka"
 	"core-api/internal/infrastructure/repository"
 	"errors"
 	"github.com/gin-gonic/gin"
@@ -58,10 +59,14 @@ func main() {
 	buildingService := services.NewBuildingService(*buildingRepo, *systemRepo, *equipmentRepo, areaRepo)
 	buildingHandler := handlers.NewBuildingHandler(accountService, &buildingService)
 
-	router := app.SetupRouter(authHandler, accountHandler, userHandler, buildingHandler, userRepo)
+	kafkaProducer, _ := kafka.NewKafkaProducer("localhost")
+	collectService := services.NewCollectService(*kafkaProducer)
+	collectHandler := handlers.NewCollectHandler(collectService)
+
+	router := app.SetupRouter(authHandler, accountHandler, userHandler, buildingHandler, collectHandler, userRepo)
 
 	srv := &http.Server{
-		Addr:    "127.0.0.1:8080",
+		Addr:    "127.0.0.1:8000",
 		Handler: router,
 	}
 
