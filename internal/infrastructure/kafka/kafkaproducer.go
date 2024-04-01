@@ -1,5 +1,3 @@
-// internal/infrastructure/kafka/kafkaproducer.go
-
 package kafka
 
 import (
@@ -18,7 +16,7 @@ func NewKafkaProducer(brokerList string) (*Producer, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println("✅ successfully connected to kafka")
+	log.Println("✅  successfully connected to kafka")
 
 	return &Producer{producer: p}, nil
 }

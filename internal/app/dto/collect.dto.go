@@ -1,8 +1,13 @@
 package dto
 
-// CollectData defines the structure for incoming data collection requests.
-type CollectData struct {
-	DeviceID  string  `json:"device_id"` // Unique identifier for the device
-	Timestamp string  `json:"timestamp"` // Timestamp of the data
-	Value     float64 `json:"value"`     // Collected value
+// ParameterValuesBatch represents a batch of values for a specific parameter.
+type ParameterValuesBatch struct {
+	ParameterID string             `json:"parameterId"` // Unique identifier for the parameter.
+	Values      []TimestampedValue `json:"values"`      // List of values with timestamps.
+}
+
+// TimestampedValue represents a value with its corresponding timestamp.
+type TimestampedValue struct {
+	Timestamp string  `json:"timestamp"` // Timestamp of the data collection.
+	Value     float64 `json:"value"`     // Collected value for the parameter.
 }
