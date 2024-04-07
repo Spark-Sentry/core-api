@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.AccountHandler, userHandler *handlers.UserHandler, buildingHandler *handlers.BuildingHandler, userRepo *repository.UserRepository) *gin.Engine {
+func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.AccountHandler, userHandler *handlers.UserHandler, buildingHandler *handlers.BuildingHandler, collectHandler *handlers.CollectHandler, userRepo *repository.UserRepository) *gin.Engine {
 	router := gin.Default()
 
 	apiV1 := router.Group("/api/v1")
@@ -62,6 +62,10 @@ func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.Acc
 			authenticatedRoutes.PUT("/equipments/:equipment_id", buildingHandler.UpdateEquipment) // "Update details of a specific piece of equipment."
 			// Delete a specific piece of equipment
 			authenticatedRoutes.DELETE("/equipments/:equipment_id", buildingHandler.DeleteEquipment) // "Remove a specific piece of equipment."
+
+			// Collect
+			authenticatedRoutes.POST("/collect", collectHandler.HandleCollectData) // Add this line for the collect endpoint
+
 		}
 	}
 
