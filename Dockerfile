@@ -19,6 +19,7 @@ WORKDIR /root/
 COPY --from=builder /app/sparksentry .
 COPY --from=builder /app/.env .
 
+
 EXPOSE 8080
 
 CMD ["./sparksentry"]
