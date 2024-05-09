@@ -53,17 +53,22 @@ func InitDB() {
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
 	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", dbUser, dbPassword, dbHost, dbPort, dbName)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?charset=utf8mb4&parseTime=True&loc=Local", dbUser, dbPassword, dbHost, dbName)
+	fmt.Println("Connecting with DSN:", dsn)
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
+
 	DB = db
 
 	log.Println("🔌 Connected to the database successfully.")
-	db.AutoMigrate(&entities.User{}, &entities.Account{}, &entities.Building{}, &entities.Area{}, &entities.Equipment{}, &entities.System{})
+
+	if err := db.AutoMigrate(&entities.User{}, &entities.Account{}, &entities.Building{}, &entities.Area{}, &entities.Equipment{}, &entities.System{}); err != nil {
+		log.Fatalf("Failed to auto-migrate database schemas: %v", err)
+	}
+
 	createSuperAdmin(db)
 }
