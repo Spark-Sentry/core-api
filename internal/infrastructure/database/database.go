@@ -54,6 +54,7 @@ func InitDB() {
 	dbName := os.Getenv("DB_NAME")
 	dbHost := os.Getenv("DB_HOST")
 
+	fmt.Println(dbName)
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?charset=utf8mb4&parseTime=True&loc=Local", dbUser, dbPassword, dbHost, dbName)
 	fmt.Println("Connecting with DSN:", dsn)
 
