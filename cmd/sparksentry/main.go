@@ -6,6 +6,7 @@ import (
 	"core-api/internal/app/handlers"
 	"core-api/internal/domain/services"
 	"core-api/internal/infrastructure/database"
+	"core-api/internal/infrastructure/influxdb"
 	"core-api/internal/infrastructure/repository"
 	"errors"
 	"github.com/gin-gonic/gin"
@@ -16,6 +17,11 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+)
+
+var (
+	influxClient   influxdb.ClientInfluxDBClient
+	collectService *services.CollectService
 )
 
 func main() {
@@ -58,7 +64,18 @@ func main() {
 	buildingService := services.NewBuildingService(*buildingRepo, *systemRepo, *equipmentRepo, areaRepo)
 	buildingHandler := handlers.NewBuildingHandler(accountService, &buildingService)
 
-	router := app.SetupRouter(authHandler, accountHandler, userHandler, buildingHandler, userRepo)
+	// Collect features
+	influxClient = influxdb.NewClient()
+	if influxClient == nil {
+		log.Fatal("Failed to initialize InfluxDB client")
+	}
+
+	log.Println("✅ Connected to InfluxDB successfully")
+	// Initialize CollectService with the InfluxDB client
+	collectService = services.NewCollectService(influxClient)
+	collectHandler := handlers.NewCollectHandler(collectService)
+
+	router := app.SetupRouter(authHandler, accountHandler, userHandler, buildingHandler, userRepo, collectHandler)
 
 	srv := &http.Server{
 		Addr:    "127.0.0.1:8080",
