@@ -31,7 +31,7 @@ func (h *CollectHandler) CollectHandler(c *gin.Context) {
 	// Loop over each measurement in Measurements and send to the service
 	for _, measurement := range requestData.Measurements {
 		if err := h.collectService.CollectData(idParam, requestData, measurement.Value, measurement.Timestamp); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to collect data"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to collect data", "messages": err})
 			return
 		}
 	}
