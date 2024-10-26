@@ -13,7 +13,7 @@ import (
 
 var DB *gorm.DB
 
-// createSuperAdmin  creates a super admin user if it doesn't exist
+// createSuperAdmin creates a super admin user if it doesn't exist
 func createSuperAdmin(db *gorm.DB) {
 	var count int64
 	var UserAdminEmail string = os.Getenv("USER_ADMIN_EMAIL")
@@ -24,14 +24,30 @@ func createSuperAdmin(db *gorm.DB) {
 		log.Fatal("Error loading .env file")
 	}
 
+	// Check if the account with ID = 1 exists
+	accountID := uint(1)
+	var account entities.Account
+	if err := db.First(&account, accountID).Error; err != nil {
+		account = entities.Account{
+			ID:           accountID,
+			Name:         "Admin Account",
+			ContactEmail: UserAdminEmail,
+			ContactPhone: "1234567890",
+			Plan:         "Premium",
+		}
+		if err := db.Create(&account).Error; err != nil {
+			log.Fatalf("Failed to create admin account: %v", err)
+		}
+		log.Println("Admin account created successfully.")
+	}
+
+	// Check if the super admin user already exists
 	db.Model(&entities.User{}).Where("email = ?", UserAdminEmail).Count(&count)
 	if count == 0 {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(UserAdminPwd), bcrypt.DefaultCost)
 		if err != nil {
 			log.Fatalf("Failed to hash password: %v", err)
 		}
-
-		accountID := uint(1)
 
 		superAdmin := entities.User{
 			Email:     UserAdminEmail,
@@ -44,9 +60,8 @@ func createSuperAdmin(db *gorm.DB) {
 		if err := db.Create(&superAdmin).Error; err != nil {
 			log.Fatalf("Failed to create super admin: %v", err)
 		}
+		log.Println("Super admin user created successfully.")
 	}
-	log.Println("Create SuperUser successfully.")
-
 }
 
 func InitDB() {
