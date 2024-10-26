@@ -78,7 +78,7 @@ func main() {
 	router := app.SetupRouter(authHandler, accountHandler, userHandler, buildingHandler, userRepo, collectHandler)
 
 	srv := &http.Server{
-		Addr:    "127.0.0.1:8080",
+		Addr:    ":8080",
 		Handler: router,
 	}
 
