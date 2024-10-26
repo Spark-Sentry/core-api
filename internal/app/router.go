@@ -10,6 +10,11 @@ import (
 func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.AccountHandler, userHandler *handlers.UserHandler, buildingHandler *handlers.BuildingHandler, userRepo *repository.UserRepository) *gin.Engine {
 	router := gin.Default()
 
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "ready",
+		})
+	})
 	apiV1 := router.Group("/api/v1")
 	{
 		apiV1.POST("/login", authHandler.Login)
