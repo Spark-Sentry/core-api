@@ -3,6 +3,7 @@ package handlers
 import (
 	"core-api/internal/app/dto"
 	"core-api/internal/domain/services"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -31,7 +32,8 @@ func (h *CollectHandler) CollectHandler(c *gin.Context) {
 	// Loop over each measurement in Measurements and send to the service
 	for _, measurement := range requestData.Measurements {
 		if err := h.collectService.CollectData(idParam, requestData, measurement.Value, measurement.Timestamp); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to collect data", "messages": err})
+			fmt.Println(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to collect data"})
 			return
 		}
 	}
