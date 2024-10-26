@@ -2,15 +2,19 @@ package dto
 
 import "time"
 
-// EquipmentData represents the data for a single equipment
-type EquipmentData struct {
-	EquipmentID string    `json:"equipment_id"` // ID of the equipment
-	Value       float64   `json:"value"`        // value of the equipment data
-	Timestamp   time.Time `json:"timestamp"`    // timestamp of the data collection
+// Measurement represents a single value with its timestamp.
+type Measurement struct {
+	Value     float64   `json:"value" binding:"required"`     // Measurement value
+	Timestamp time.Time `json:"timestamp" binding:"required"` // Measurement timestamp
 }
 
-// DailyCollectionRequest represents the request for daily collection of data
+// DailyCollectionRequest represents the request structure for collecting multiple measurements.
 type DailyCollectionRequest struct {
-	Date       time.Time       `json:"date"`       // date for which data is requested
-	Equipments []EquipmentData `json:"equipments"` // list of equipments for which data is requested
+	Measurements []Measurement `json:"measurements" binding:"required,dive,required"` // Array of measurements
+	Name         string        `json:"name" binding:"required"`                       // Parameter name
+	HostDevice   int           `json:"hostDevice" binding:"required"`                 // Host device ID
+	Device       int           `json:"device" binding:"required"`                     // Measurement device ID
+	Log          float64       `json:"log,omitempty"`                                 // Log value
+	Point        string        `json:"point,omitempty"`                               // Point value
+	IdEquipment  int           `json:"id_equipment" binding:"required"`               // Equipment ID
 }

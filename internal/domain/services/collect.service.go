@@ -1,19 +1,38 @@
 package services
 
-type CollectService struct{}
+import (
+	"core-api/internal/app/dto"
+	"core-api/internal/infrastructure/influxdb"
+	"fmt"
+	"time"
+)
 
-func NewCollectService() *CollectService {
-	return &CollectService{}
+// CollectService provides data collection functionalities.
+type CollectService struct {
+	influxClient influxdb.ClientInfluxDBClient
 }
 
-// CollectData handle the data from Building Management service and save it to influxDB
-// We will need to call the infrastructure method of 3rd party library to save the data to influxDB
-func (c *CollectService) CollectData(data []byte) error {
-	var err error
-	// TODO: implement the method
-	// 1. parse the data from Building Management service
-	// 2. save the data to influxDB
-	// 3. return error if any
-	return err
+// NewCollectService initializes a new CollectService with an InfluxDB client.
+func NewCollectService(client influxdb.ClientInfluxDBClient) *CollectService {
+	return &CollectService{influxClient: client}
+}
 
+// CollectData processes each value in request data and saves it to InfluxDB with the provided timestamp.
+func (s *CollectService) CollectData(idParam string, data dto.DailyCollectionRequest, value float64, timestamp time.Time) error {
+	// Prepare tags and fields for the data point
+	tags := map[string]string{
+		"id_param":     idParam,
+		"name":         data.Name,
+		"host_device":  fmt.Sprintf("%d", data.HostDevice),
+		"device":       fmt.Sprintf("%d", data.Device),
+		"id_equipment": fmt.Sprintf("%d", data.IdEquipment),
+	}
+	fields := map[string]interface{}{
+		"value": value, // Individual value from Measurements array
+		"log":   data.Log,
+		"point": data.Point,
+	}
+
+	// Write data point to InfluxDB with specific timestamp
+	return s.influxClient.WritePoint("energy_data", tags, fields, timestamp)
 }

@@ -16,8 +16,11 @@ func NewCollectHandler(collectService *services.CollectService) *CollectHandler 
 	return &CollectHandler{collectService: collectService}
 }
 
-// CollectHandler handle the data from the BMS and save to influxDB
+// CollectHandler handles data from the BMS and saves it to InfluxDB.
 func (h *CollectHandler) CollectHandler(c *gin.Context) {
+	// Get id_param from URL
+	idParam := c.Param("id_param")
+
 	// Parse the JSON request body
 	var requestData dto.DailyCollectionRequest
 	if err := c.ShouldBindJSON(&requestData); err != nil {
@@ -25,12 +28,13 @@ func (h *CollectHandler) CollectHandler(c *gin.Context) {
 		return
 	}
 
-	/*	// Call the CollectData method with the parsed data
-		err := h.collectService.CollectData(requestData)
-		if err != nil {
+	// Loop over each measurement in Measurements and send to the service
+	for _, measurement := range requestData.Measurements {
+		if err := h.collectService.CollectData(idParam, requestData, measurement.Value, measurement.Timestamp); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to collect data"})
 			return
-		}*/
+		}
+	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Data collected successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "Data collected and saved successfully"})
 }
