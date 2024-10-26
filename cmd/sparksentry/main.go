@@ -58,10 +58,14 @@ func main() {
 	buildingService := services.NewBuildingService(*buildingRepo, *systemRepo, *equipmentRepo, areaRepo)
 	buildingHandler := handlers.NewBuildingHandler(accountService, &buildingService)
 
-	router := app.SetupRouter(authHandler, accountHandler, userHandler, buildingHandler, userRepo)
+	// Collect features
+	collectService := services.NewCollectService()
+	collectHandler := handlers.NewCollectHandler(collectService)
+
+	router := app.SetupRouter(authHandler, accountHandler, userHandler, buildingHandler, userRepo, collectHandler)
 
 	srv := &http.Server{
-		Addr:    ":8080",
+		Addr:    "127.0.0.1:8080",
 		Handler: router,
 	}
 
