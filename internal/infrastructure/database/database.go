@@ -31,17 +31,22 @@ func createSuperAdmin(db *gorm.DB) {
 			log.Fatalf("Failed to hash password: %v", err)
 		}
 
+		accountID := uint(1)
+
 		superAdmin := entities.User{
 			Email:     UserAdminEmail,
 			Password:  string(hashedPassword),
 			FirstName: "Super",
 			LastName:  "Admin",
 			Role:      "superadmin",
+			AccountID: &accountID,
 		}
 		if err := db.Create(&superAdmin).Error; err != nil {
 			log.Fatalf("Failed to create super admin: %v", err)
 		}
 	}
+	log.Println("Create SuperUser successfully.")
+
 }
 
 func InitDB() {
