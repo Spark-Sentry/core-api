@@ -32,7 +32,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	c.JSON(http.StatusOK, gin.H{"data": token})
 }
 
 // Register handle register logic
@@ -48,6 +48,8 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		Password:  req.Password,
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
+		Role:      req.Role,
+		AccountID: &req.AccountID,
 	}
 
 	if err := h.authService.RegisterUser(&user); err != nil {

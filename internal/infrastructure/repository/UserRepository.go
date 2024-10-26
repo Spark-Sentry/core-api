@@ -29,8 +29,6 @@ func (repo *UserRepository) FindByEmail(email string) (*entities.User, error) {
 }
 
 // Save inserts a new user into the database.
-// It takes a pointer to a User entity and attempts to create a record in the database.
-// Returns an error if the operation fails.
 func (repo *UserRepository) Save(user *entities.User) error {
 	if err := repo.db.Create(user).Error; err != nil {
 		return err // Returns an error if the saving operation fails
@@ -38,6 +36,7 @@ func (repo *UserRepository) Save(user *entities.User) error {
 	return nil
 }
 
+// AssociateUserToAccount associates a user with an account.
 func (repo *UserRepository) AssociateUserToAccount(userID uint, accountID uint) error {
 	user := &entities.User{}
 	if err := repo.db.First(user, userID).Error; err != nil {

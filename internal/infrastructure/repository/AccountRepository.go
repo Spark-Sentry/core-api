@@ -27,7 +27,7 @@ func (repo *AccountRepository) Create(account *entities.Account) error {
 // FindByID finds an account by its ID.
 func (repo *AccountRepository) FindByID(id uint) (*entities.Account, error) {
 	var account entities.Account
-	result := repo.db.First(&account, id)
+	result := repo.db.Preload("Users").Preload("Buildings").First(&account, id)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		// Specific handling for not found error
 		return nil, nil
@@ -61,7 +61,7 @@ func (repo *AccountRepository) Delete(id uint) error {
 // List returns all accounts from the database.
 func (repo *AccountRepository) List() ([]entities.Account, error) {
 	var accounts []entities.Account
-	result := repo.db.Find(&accounts)
+	result := repo.db.Preload("Users").Preload("Buildings").Find(&accounts)
 	if result.Error != nil {
 		// Handle potential errors, such as database connectivity issues
 		return nil, result.Error

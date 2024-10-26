@@ -13,6 +13,7 @@ import (
 
 var DB *gorm.DB
 
+// createSuperAdmin  creates a super admin user if it doesn't exist
 func createSuperAdmin(db *gorm.DB) {
 	var count int64
 	var UserAdminEmail string = os.Getenv("USER_ADMIN_EMAIL")

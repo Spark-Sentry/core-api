@@ -4,8 +4,10 @@ import (
 	"core-api/internal/app/dto"
 	"core-api/internal/domain/entities"
 	"core-api/internal/domain/services"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 type AccountHandler struct {
@@ -18,6 +20,7 @@ func NewAccountHandler(accountService *services.AccountService) *AccountHandler 
 	}
 }
 
+// CreateAccount handles the creation of a new account.
 func (h *AccountHandler) CreateAccount(c *gin.Context) {
 	var req dto.CreateAccountRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -44,6 +47,34 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Account created successfully", "account": account})
+}
+
+// ListAllAccounts retrieves a list of all accounts.
+func (h *AccountHandler) ListAllAccounts(c *gin.Context) {
+	accounts, err := h.accountService.GetAllAccounts()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve accounts"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": accounts})
+}
+
+// GetAccountByID retrieves an account by its ID.
+func (h *AccountHandler) GetAccountByID(c *gin.Context) {
+	idParam := c.Param("id")
+	accountID, err := strconv.ParseUint(idParam, 10, 32)
+	account, err := h.accountService.GetAccountByID(uint(accountID))
+	if err != nil {
+		if errors.Is(err, services.ErrAccountNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Account not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve account"})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": account})
 }
 
 func (h *AccountHandler) AssociateUserToAccount(c *gin.Context) {

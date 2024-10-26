@@ -13,6 +13,7 @@ func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.Acc
 	apiV1 := router.Group("/api/v1")
 	{
 		apiV1.POST("/login", authHandler.Login)
+		apiV1.POST("/register", authHandler.Register)
 
 		authenticatedRoutes := apiV1.Group("/")
 		authenticatedRoutes.Use(middleware.JWTAuthMiddleware(*userRepo))
@@ -22,9 +23,10 @@ func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.Acc
 					"message": "Secured page",
 				})
 			})
-			authenticatedRoutes.POST("/register", authHandler.Register)
 			authenticatedRoutes.GET("/users/me", userHandler.UsersMe)
 			authenticatedRoutes.POST("/accounts", accountHandler.CreateAccount)
+			authenticatedRoutes.GET("/accounts", accountHandler.ListAllAccounts)
+			authenticatedRoutes.GET("/accounts/:id", accountHandler.GetAccountByID)
 			authenticatedRoutes.POST("/accounts/users", accountHandler.AssociateUserToAccount)
 
 			// Building Routes

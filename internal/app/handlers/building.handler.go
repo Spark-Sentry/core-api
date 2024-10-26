@@ -76,7 +76,7 @@ func (h *BuildingHandler) AddArea(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"areas": createdAreas})
+	c.JSON(http.StatusCreated, gin.H{"data": createdAreas})
 }
 
 // GetAreasByBuildingID handles the request to retrieve areas for a specific building
