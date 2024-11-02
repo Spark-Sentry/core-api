@@ -50,7 +50,7 @@ func main() {
 	areaRepo := repository.NewAreaRepository(database.DB)
 
 	// Auth features
-	authService := services.NewAuthService(*userRepo)
+	authService := services.NewAuthService(*userRepo, *accountRepo)
 	authHandler := handlers.NewAuthHandler(authService)
 
 	// Account features

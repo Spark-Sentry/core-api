@@ -35,27 +35,37 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": token})
 }
 
-// Register handle register logic
+// Register handles the registration of a new user along with their associated account.
 func (h *AuthHandler) Register(c *gin.Context) {
-	var req dto.RegisterRequest
+	var req dto.RegisterAccountRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	// Create an account entity using the provided account information
+	account := entities.Account{
+		Name:         req.Account.Name,
+		ContactEmail: req.Account.ContactEmail,
+		ContactPhone: req.Account.ContactPhone,
+		Plan:         req.Account.Plan,
+	}
+
+	// Create a user entity linked to the account
 	user := entities.User{
 		Email:     req.Email,
 		Password:  req.Password,
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		Role:      req.Role,
-		AccountID: &req.AccountID,
+		Account:   &account, // Associate the user with the account
 	}
 
-	if err := h.authService.RegisterUser(&user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create user"})
+	// Register the user along with the account in the service layer
+	if err := h.authService.RegisterUserAndAccount(&user, &account); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create user and account"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully"})
+	c.JSON(http.StatusCreated, gin.H{"message": "User and account registered successfully"})
 }
