@@ -4,7 +4,7 @@ import "time"
 
 // Measurement represents a single value with its timestamp.
 type Measurement struct {
-	Value     float64   `json:"value" binding:"required"`     // Measurement value
+	Value     *float64  `json:"value" binding:"required"`     // Measurement value
 	Timestamp time.Time `json:"timestamp" binding:"required"` // Measurement timestamp
 }
 
