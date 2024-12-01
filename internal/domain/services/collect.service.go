@@ -18,10 +18,9 @@ func NewCollectService(client influxdb.ClientInfluxDBClient) *CollectService {
 }
 
 // CollectData processes each value in request data and saves it to InfluxDB with the provided timestamp.
-func (s *CollectService) CollectData(idParam string, data dto.DailyCollectionRequest, value float64, timestamp time.Time) error {
+func (s *CollectService) CollectData(data dto.DailyCollectionRequest, value float64, timestamp time.Time) error {
 	// Prepare tags and fields for the data point
 	tags := map[string]string{
-		"id_param":     idParam,
 		"name":         data.Name,
 		"measurement":  data.MeasurementName,
 		"host_device":  fmt.Sprintf("%d", data.HostDevice),

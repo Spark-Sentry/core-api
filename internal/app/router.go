@@ -74,7 +74,7 @@ func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.Acc
 
 			// Collect Data Routes
 			// Collect data handler main
-			authenticatedRoutes.POST("/collect/:id_param", collectHandler.CollectHandler) // "Collect data for a specific parameter."
+			authenticatedRoutes.POST("/collect", collectHandler.CollectHandler) // "Collect data for a specific parameter."
 		}
 	}
 

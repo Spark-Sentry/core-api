@@ -19,9 +19,6 @@ func NewCollectHandler(collectService *services.CollectService) *CollectHandler 
 
 // CollectHandler handles data from the BMS and saves it to InfluxDB.
 func (h *CollectHandler) CollectHandler(c *gin.Context) {
-	// Get id_param from URL
-	idParam := c.Param("id_param")
-
 	// Parse the JSON request body
 	var requestData dto.DailyCollectionRequest
 	if err := c.ShouldBindJSON(&requestData); err != nil {
@@ -31,7 +28,7 @@ func (h *CollectHandler) CollectHandler(c *gin.Context) {
 
 	// Loop over each measurement in Measurements and send to the service
 	for _, measurement := range requestData.Measurements {
-		if err := h.collectService.CollectData(idParam, requestData, *measurement.Value, measurement.Timestamp); err != nil {
+		if err := h.collectService.CollectData(requestData, *measurement.Value, measurement.Timestamp); err != nil {
 			fmt.Println(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to collect data"})
 			return
