@@ -23,9 +23,11 @@ func (s *CollectService) CollectData(idParam string, data dto.DailyCollectionReq
 	tags := map[string]string{
 		"id_param":     idParam,
 		"name":         data.Name,
+		"measurement":  data.MeasurementName,
 		"host_device":  fmt.Sprintf("%d", data.HostDevice),
 		"device":       fmt.Sprintf("%d", data.Device),
 		"id_equipment": fmt.Sprintf("%d", data.IdEquipment),
+		"id_parameter": fmt.Sprintf("%d", data.IdParameter),
 	}
 	fields := map[string]interface{}{
 		"value": value, // Individual value from Measurements array
@@ -34,5 +36,5 @@ func (s *CollectService) CollectData(idParam string, data dto.DailyCollectionReq
 	}
 
 	// Write data point to InfluxDB with specific timestamp
-	return s.influxClient.WritePoint("energy_data", tags, fields, timestamp)
+	return s.influxClient.WritePoint(data.MeasurementName, tags, fields, timestamp)
 }
