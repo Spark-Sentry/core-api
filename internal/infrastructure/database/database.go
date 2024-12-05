@@ -88,7 +88,7 @@ func InitDB() {
 
 	log.Println("🔌 Connected to the database successfully.")
 
-	if err := db.AutoMigrate(&entities.User{}, &entities.Account{}, &entities.Building{}, &entities.Area{}, &entities.Equipment{}, &entities.System{}); err != nil {
+	if err := db.AutoMigrate(&entities.User{}, &entities.Account{}, &entities.Building{}, &entities.Area{}, &entities.Equipment{}, &entities.System{}, &entities.Parameter{}); err != nil {
 		log.Fatalf("Failed to auto-migrate database schemas: %v", err)
 	}
 
