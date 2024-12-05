@@ -72,6 +72,11 @@ func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.Acc
 			// Delete a specific piece of equipment
 			authenticatedRoutes.DELETE("/equipments/:equipment_id", buildingHandler.DeleteEquipment) // "Remove a specific piece of equipment."
 
+			// Parameter Management Routes
+			// Add a new parameter to a specific equipment
+			authenticatedRoutes.POST("/equipments/:equipment_id/parameters", buildingHandler.AddParameterToEquipment) // "Add a new parameter to a specific equipment."
+			// Retrieve all parameters associated with a specific equipment
+			authenticatedRoutes.GET("/equipments/:equipment_id/parameters", buildingHandler.GetParametersByEquipmentID) // "List all parameters associated with a specific equipment."
 			// Collect Data Routes
 			// Collect data handler main
 			authenticatedRoutes.POST("/collect", collectHandler.CollectHandler) // "Collect data for a specific parameter."

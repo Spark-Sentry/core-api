@@ -47,6 +47,7 @@ func main() {
 	buildingRepo := repository.NewBuildingRepository(database.DB)
 	systemRepo := repository.NewSystemRepository(database.DB)
 	equipmentRepo := repository.NewEquipmentRepository(database.DB)
+	parameterRepo := repository.NewParameterRepository(database.DB)
 	areaRepo := repository.NewAreaRepository(database.DB)
 
 	// Auth features
@@ -61,7 +62,7 @@ func main() {
 	userService := services.NewUserService(*userRepo, *accountRepo)
 	userHandler := handlers.NewUserHandler(userService)
 
-	buildingService := services.NewBuildingService(*buildingRepo, *systemRepo, *equipmentRepo, areaRepo)
+	buildingService := services.NewBuildingService(*buildingRepo, *systemRepo, *equipmentRepo, areaRepo, *parameterRepo)
 	buildingHandler := handlers.NewBuildingHandler(accountService, &buildingService)
 
 	// Collect features

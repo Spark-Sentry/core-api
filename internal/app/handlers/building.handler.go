@@ -286,3 +286,43 @@ func (h *BuildingHandler) DeleteEquipment(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Equipment removed successfully"})
 }
+
+// AddParameterToEquipment handles the POST request to add new parameters to a specific piece of equipment.
+func (h *BuildingHandler) AddParameterToEquipment(c *gin.Context) {
+	equipmentID, err := strconv.ParseUint(c.Param("equipment_id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid equipment ID"})
+		return
+	}
+
+	var parameterDTOs []dto.ParameterCreateDTO
+	if err := c.ShouldBindJSON(&parameterDTOs); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	for _, parameterDTO := range parameterDTOs {
+		err := h.buildingService.AddParameterToEquipment(uint(equipmentID), parameterDTO)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add parameter to equipment"})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Parameters added successfully"})
+}
+
+// GetParametersByEquipmentID handles the GET request to list all parameters within a specific piece of equipment.
+func (h *BuildingHandler) GetParametersByEquipmentID(c *gin.Context) {
+	equipmentID, err := strconv.Atoi(c.Param("equipment_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid equipment ID"})
+		return
+	}
+
+	parameters, err := h.buildingService.GetParametersByEquipmentID(uint(equipmentID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve parameters"})
+	}
+	c.JSON(http.StatusOK, parameters)
+}

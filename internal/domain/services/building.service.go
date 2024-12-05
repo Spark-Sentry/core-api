@@ -4,51 +4,30 @@ import (
 	"core-api/internal/app/dto"
 	"core-api/internal/domain/entities"
 	"core-api/internal/infrastructure/repository"
+	"errors"
+	"fmt"
 )
 
-// BuildingService interface for building related services.
+// BuildingService interface for building-related services.
 type BuildingService interface {
-	// CreateBuilding creates a new Building with at least one Area.
 	CreateBuilding(req *dto.CreateBuildingRequest, accountID uint) error
-
-	// GetAllBuildings retrieves all buildings associated with an account.
 	GetAllBuildings(accountID uint) ([]entities.Building, error)
-
-	// AddAreas adds a new area to a building.
 	AddAreas(areasDTO []dto.AreaDTO, buildingID uint) ([]entities.Area, error)
-
-	// AddSystemToArea adds a new system to an area.
 	AddSystemToArea(areaID uint, systemData *entities.System) error
-
-	// GetSystemsByAreaID retrieves all systems associated with an area.
 	GetSystemsByAreaID(areaID uint) ([]entities.System, error)
-
-	// AddEquipmentToSystem adds new equipment to a system.
 	AddEquipmentToSystem(systemID uint, equipmentDTO dto.EquipmentCreateDTO) error
-
-	// GetAreasByBuildingID retrieves areas for a specific building
 	GetAreasByBuildingID(buildingID uint) ([]entities.Area, error)
-
-	// UpdateArea updates the specified area with new details.
 	UpdateArea(areaID uint, dto dto.AreaUpdateDTO) error
-
-	// DeleteArea deletes the specified area.
 	DeleteArea(areaID uint) error
-
-	// UpdateSystem update the specified system
 	UpdateSystem(systemID uint, dto dto.SystemUpdateDTO) error
-
-	// DeleteSystem delete the specified system
 	DeleteSystem(systemID uint) error
-
-	// GetEquipmentsBySystemID retrieves all equipments within a specific system.
 	GetEquipmentsBySystemID(systemID uint) ([]entities.Equipment, error)
-
-	// UpdateEquipment updates the specified piece of equipment with new details.
 	UpdateEquipment(equipmentID uint, dto dto.EquipmentUpdateDTO) error
-
-	// DeleteEquipment deletes the specified piece of equipment.
 	DeleteEquipment(equipmentID uint) error
+	AddParameterToEquipment(equipmentID uint, parameterDTO dto.ParameterCreateDTO) error
+	GetParametersByEquipmentID(equipmentID uint) ([]entities.Parameter, error)
+	UpdateParameter(parameterID uint, dto dto.ParameterUpdateDTO) error
+	DeleteParameter(parameterID uint) error
 }
 
 type buildingService struct {
@@ -56,41 +35,71 @@ type buildingService struct {
 	buildingRepo  repository.BuildingRepository
 	systemRepo    repository.SystemRepository
 	equipmentRepo repository.EquipmentRepository
+	parameterRepo repository.ParameterRepository
 }
 
 // NewBuildingService creates a new instance of BuildingService.
-func NewBuildingService(buildingRepo repository.BuildingRepository, systemRepo repository.SystemRepository, equipmentRepo repository.EquipmentRepository, areaRepo repository.AreaRepository) BuildingService {
-	return &buildingService{buildingRepo: buildingRepo, systemRepo: systemRepo, equipmentRepo: equipmentRepo, areaRepo: areaRepo}
+func NewBuildingService(
+	buildingRepo repository.BuildingRepository,
+	systemRepo repository.SystemRepository,
+	equipmentRepo repository.EquipmentRepository,
+	areaRepo repository.AreaRepository,
+	parameterRepo repository.ParameterRepository,
+) BuildingService {
+	return &buildingService{
+		buildingRepo:  buildingRepo,
+		systemRepo:    systemRepo,
+		equipmentRepo: equipmentRepo,
+		areaRepo:      areaRepo,
+		parameterRepo: parameterRepo,
+	}
 }
 
 // CreateBuilding creates a new Building with at least one Area from a DTO.
 func (s *buildingService) CreateBuilding(req *dto.CreateBuildingRequest, accountID uint) error {
+	if req == nil {
+		return errors.New("invalid request: request body is nil")
+	}
+
+	if len(req.Areas) == 0 {
+		return errors.New("a building must have at least one area")
+	}
+
 	building := entities.Building{
 		Name:      req.Name,
 		Address:   req.Address,
 		Group:     req.Group,
 		AccountID: accountID,
+		Areas:     []entities.Area{},
 	}
-
-	building.Areas = []entities.Area{}
 
 	for _, areaReq := range req.Areas {
-		area := entities.Area{
+		building.Areas = append(building.Areas, entities.Area{
 			Name:        areaReq.Name,
 			Description: areaReq.Description,
-		}
-		building.Areas = append(building.Areas, area)
+		})
 	}
 
-	return s.buildingRepo.CreateBuilding(&building)
+	err := s.buildingRepo.CreateBuilding(&building)
+	if err != nil {
+		return fmt.Errorf("failed to create building: %w", err)
+	}
+	return nil
 }
 
 func (s *buildingService) GetAllBuildings(accountID uint) ([]entities.Building, error) {
-	return s.buildingRepo.FindAllByAccountID(accountID)
+	buildings, err := s.buildingRepo.FindAllByAccountID(accountID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve buildings: %w", err)
+	}
+	return buildings, nil
 }
 
-// AddAreas iterates over the slice of AreaDTO, adds each Area, and returns a slice of the added Areas
 func (s *buildingService) AddAreas(areasDTO []dto.AreaDTO, buildingID uint) ([]entities.Area, error) {
+	if len(areasDTO) == 0 {
+		return nil, errors.New("no areas provided to add")
+	}
+
 	var areas []entities.Area
 	for _, areaDTO := range areasDTO {
 		area := entities.Area{
@@ -100,40 +109,71 @@ func (s *buildingService) AddAreas(areasDTO []dto.AreaDTO, buildingID uint) ([]e
 		}
 		createdArea, err := s.areaRepo.Save(&area)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to add area: %w", err)
 		}
 		areas = append(areas, *createdArea)
 	}
 	return areas, nil
 }
 
-// GetAreasByBuildingID retrieves areas for a specific building
 func (s *buildingService) GetAreasByBuildingID(buildingID uint) ([]entities.Area, error) {
-	return s.areaRepo.FindByBuildingID(buildingID)
+	areas, err := s.areaRepo.FindByBuildingID(buildingID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve areas: %w", err)
+	}
+	return areas, nil
 }
 
-// UpdateArea updates the specified area with new details.
 func (s *buildingService) UpdateArea(areaID uint, dto dto.AreaUpdateDTO) error {
-	area := entities.Area{ID: areaID, Name: dto.Name, Description: dto.Description}
-	return s.areaRepo.UpdateArea(area)
+	if dto.Name == "" {
+		return errors.New("area name cannot be empty")
+	}
+
+	area := entities.Area{
+		ID:          areaID,
+		Name:        dto.Name,
+		Description: dto.Description,
+	}
+
+	err := s.areaRepo.UpdateArea(area)
+	if err != nil {
+		return fmt.Errorf("failed to update area: %w", err)
+	}
+	return nil
 }
 
-// DeleteArea deletes the specified area.
 func (s *buildingService) DeleteArea(areaID uint) error {
-	return s.areaRepo.DeleteArea(areaID)
+	err := s.areaRepo.DeleteArea(areaID)
+	if err != nil {
+		return fmt.Errorf("failed to delete area: %w", err)
+	}
+	return nil
 }
 
 func (s *buildingService) AddSystemToArea(areaID uint, systemData *entities.System) error {
+	if systemData.Name == "" {
+		return errors.New("system name cannot be empty")
+	}
+
 	system := &entities.System{
 		AreaID:      areaID,
 		Name:        systemData.Name,
 		Description: systemData.Description,
 	}
-	return s.systemRepo.CreateSystem(system)
+
+	err := s.systemRepo.CreateSystem(system)
+	if err != nil {
+		return fmt.Errorf("failed to add system to area: %w", err)
+	}
+	return nil
 }
 
 func (s *buildingService) GetSystemsByAreaID(areaID uint) ([]entities.System, error) {
-	return s.systemRepo.FindByAreaID(areaID)
+	systems, err := s.systemRepo.FindByAreaID(areaID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve systems for area ID %d: %w", areaID, err)
+	}
+	return systems, nil
 }
 
 func (s *buildingService) UpdateSystem(systemID uint, dto dto.SystemUpdateDTO) error {
@@ -145,25 +185,97 @@ func (s *buildingService) DeleteSystem(systemID uint) error {
 }
 
 func (s *buildingService) AddEquipmentToSystem(systemID uint, equipmentDTO dto.EquipmentCreateDTO) error {
+	if equipmentDTO.Tag == "" {
+		return errors.New("equipment tag cannot be empty")
+	}
+
 	equipment := entities.Equipment{
 		SystemID:    systemID,
 		Tag:         equipmentDTO.Tag,
 		Description: equipmentDTO.Description,
 	}
-	return s.equipmentRepo.AddEquipment(&equipment)
+
+	err := s.equipmentRepo.AddEquipment(&equipment)
+	if err != nil {
+		return fmt.Errorf("failed to add equipment to system: %w", err)
+	}
+	return nil
 }
 
-// GetEquipmentsBySystemID retrieves all equipments within a specific system.
 func (s *buildingService) GetEquipmentsBySystemID(systemID uint) ([]entities.Equipment, error) {
-	return s.equipmentRepo.FindBySystemID(systemID)
+	equipments, err := s.equipmentRepo.FindBySystemID(systemID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve equipment for system ID %d: %w", systemID, err)
+	}
+	return equipments, nil
 }
 
-// UpdateEquipment updates the specified piece of equipment with new details.
 func (s *buildingService) UpdateEquipment(equipmentID uint, dto dto.EquipmentUpdateDTO) error {
-	return s.equipmentRepo.UpdateEquipment(equipmentID, dto)
+	err := s.equipmentRepo.UpdateEquipment(equipmentID, dto)
+	if err != nil {
+		return fmt.Errorf("failed to update equipment: %w", err)
+	}
+	return nil
 }
 
-// DeleteEquipment deletes the specified piece of equipment.
 func (s *buildingService) DeleteEquipment(equipmentID uint) error {
-	return s.equipmentRepo.DeleteEquipment(equipmentID)
+	err := s.equipmentRepo.DeleteEquipment(equipmentID)
+	if err != nil {
+		return fmt.Errorf("failed to delete equipment: %w", err)
+	}
+	return nil
+}
+
+func (s *buildingService) AddParameterToEquipment(equipmentID uint, parameterDTO dto.ParameterCreateDTO) error {
+	if parameterDTO.Name == "" {
+		return errors.New("parameter name cannot be empty")
+	}
+
+	parameter := entities.Parameter{
+		Name:        parameterDTO.Name,
+		HostDevice:  parameterDTO.HostDevice,
+		Device:      parameterDTO.Device,
+		Log:         parameterDTO.Log,
+		Point:       parameterDTO.Point,
+		Unit:        parameterDTO.Unit,
+		EquipmentID: equipmentID,
+	}
+
+	err := s.parameterRepo.Create(&parameter)
+	if err != nil {
+		return fmt.Errorf("failed to add parameter to equipment: %w", err)
+	}
+	return nil
+}
+
+func (s *buildingService) GetParametersByEquipmentID(equipmentID uint) ([]entities.Parameter, error) {
+	parameters, err := s.parameterRepo.FindByEquipmentID(equipmentID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve parameters for equipment ID %d: %w", equipmentID, err)
+	}
+	return parameters, nil
+}
+
+func (s *buildingService) UpdateParameter(parameterID uint, dto dto.ParameterUpdateDTO) error {
+	err := s.parameterRepo.Update(&entities.Parameter{
+		ID:         parameterID,
+		Name:       dto.Name,
+		HostDevice: dto.HostDevice,
+		Device:     dto.Device,
+		Log:        dto.Log,
+		Point:      dto.Point,
+		Unit:       dto.Unit,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to update parameter: %w", err)
+	}
+	return nil
+}
+
+func (s *buildingService) DeleteParameter(parameterID uint) error {
+	err := s.parameterRepo.Delete(parameterID)
+	if err != nil {
+		return fmt.Errorf("failed to delete parameter: %w", err)
+	}
+	return nil
 }
