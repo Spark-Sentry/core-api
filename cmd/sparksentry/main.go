@@ -79,7 +79,10 @@ func main() {
 	collectService = services.NewCollectService(influxClient)
 	collectHandler := handlers.NewCollectHandler(collectService)
 
-	router := app.SetupRouter(authHandler, accountHandler, userHandler, buildingHandler, userRepo, collectHandler, trendlogsHandler)
+	savingsService := services.NewSavingsService(influxClient)
+	savingsHandler := handlers.NewSavingsHandler(savingsService)
+
+	router := app.SetupRouter(authHandler, accountHandler, userHandler, buildingHandler, userRepo, collectHandler, trendlogsHandler, savingsHandler)
 
 	srv := &http.Server{
 		Addr:    ":8080",
