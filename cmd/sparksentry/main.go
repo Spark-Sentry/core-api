@@ -72,11 +72,14 @@ func main() {
 	}
 
 	log.Println("✅ Connected to InfluxDB successfully")
+	trendlogsService := services.NewTrendlogsService(influxClient)
+	trendlogsHandler := handlers.NewTrendlogsHandler(trendlogsService)
+
 	// Initialize CollectService with the InfluxDB client
 	collectService = services.NewCollectService(influxClient)
 	collectHandler := handlers.NewCollectHandler(collectService)
 
-	router := app.SetupRouter(authHandler, accountHandler, userHandler, buildingHandler, userRepo, collectHandler)
+	router := app.SetupRouter(authHandler, accountHandler, userHandler, buildingHandler, userRepo, collectHandler, trendlogsHandler)
 
 	srv := &http.Server{
 		Addr:    ":8080",

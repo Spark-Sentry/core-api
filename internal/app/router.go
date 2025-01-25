@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.AccountHandler, userHandler *handlers.UserHandler, buildingHandler *handlers.BuildingHandler, userRepo *repository.UserRepository, collectHandler *handlers.CollectHandler) *gin.Engine {
+func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.AccountHandler, userHandler *handlers.UserHandler, buildingHandler *handlers.BuildingHandler, userRepo *repository.UserRepository, collectHandler *handlers.CollectHandler, trendlogsHandler *handlers.TrendlogsHandler) *gin.Engine {
 	router := gin.Default()
 
 	router.Use(CORSMiddleware())
@@ -80,6 +80,11 @@ func SetupRouter(authHandler *handlers.AuthHandler, accountHandler *handlers.Acc
 			// Collect Data Routes
 			// Collect data handler main
 			authenticatedRoutes.POST("/collect", collectHandler.CollectHandler) // "Collect data for a specific parameter."
+
+			// Trendlogs route
+			// Retrieve timeseries data
+			authenticatedRoutes.POST("/trendlogs", trendlogsHandler.GetTrendlogs)
+
 		}
 	}
 

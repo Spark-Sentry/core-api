@@ -3,7 +3,6 @@ package influxdb
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -11,10 +10,19 @@ import (
 	"github.com/influxdata/influxdb-client-go/v2/api"
 )
 
+// TrendlogsQueryOptions is an example struct to hold parameter values
+// that will be injected into a Flux script.
+type TrendlogsQueryOptions struct {
+	Bucket       string
+	TimeStart    string
+	TimeStop     string
+	IdParameters []string
+}
+
 // ClientInfluxDBClient defines the interface for interacting with InfluxDB
 type ClientInfluxDBClient interface {
 	WritePoint(measurement string, tags map[string]string, fields map[string]interface{}, timestamp time.Time) error
-	Query(query string) (*api.QueryTableResult, error)
+	Query(ctx context.Context, query string) (*api.QueryTableResult, error)
 	Close()
 }
 
@@ -35,7 +43,7 @@ func NewClient() *Client {
 	bucket := os.Getenv("INFLUXDB_BUCKET")
 
 	if token == "" || org == "" || bucket == "" {
-		log.Fatal("Environment variables INFLUXDB_TOKEN, INFLUXDB_ORG, and INFLUXDB_BUCKET must be set")
+		panic("Environment variables INFLUXDB_TOKEN, INFLUXDB_ORG, and INFLUXDB_BUCKET must be set")
 	}
 	if url == "" {
 		url = "http://localhost:8086"
@@ -58,8 +66,8 @@ func (c *Client) WritePoint(measurement string, tags map[string]string, fields m
 }
 
 // Query executes a Flux query and returns the result
-func (c *Client) Query(query string) (*api.QueryTableResult, error) {
-	result, err := c.queryAPI.Query(context.Background(), query)
+func (c *Client) Query(ctx context.Context, query string) (*api.QueryTableResult, error) {
+	result, err := c.queryAPI.Query(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("query failed: %w", err)
 	}
@@ -69,42 +77,4 @@ func (c *Client) Query(query string) (*api.QueryTableResult, error) {
 // Close shuts down the InfluxDB client
 func (c *Client) Close() {
 	c.client.Close()
-}
-
-// ExampleWrite demonstrates how to use the WritePoint method
-func ExampleWrite() {
-	client := NewClient()
-	defer client.Close()
-
-	tags := map[string]string{
-		"host": "server01",
-	}
-	fields := map[string]interface{}{
-		"cpu_usage": 0.65,
-	}
-
-	err := client.WritePoint("system", tags, fields, time.Now())
-	if err != nil {
-		log.Fatalf("Error writing point: %v", err)
-	}
-}
-
-// ExampleQuery demonstrates how to use the Query method
-func ExampleQuery() {
-	client := NewClient()
-	defer client.Close()
-
-	query := `from(bucket:"my-bucket") |> range(start: -1h) |> filter(fn: (r) => r._measurement == "system")`
-	result, err := client.Query(query)
-	if err != nil {
-		log.Fatalf("Error executing query: %v", err)
-	}
-
-	// Process query result (this is just an example)
-	for result.Next() {
-		fmt.Printf("Time: %v, Value: %v\n", result.Record().Time(), result.Record().Value())
-	}
-	if result.Err() != nil {
-		log.Fatalf("Query parsing error: %v", result.Err())
-	}
 }
