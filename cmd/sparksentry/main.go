@@ -34,21 +34,30 @@ func main() {
 
 	log.Println("🚀 Starting server...")
 
-	err := godotenv.Load()
-	if err != nil {
+	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
 	database.InitDB()
 
-	// Init repo
+	// Initialize repositories
 	userRepo := repository.NewUserRepository(database.DB)
 	accountRepo := repository.NewAccountRepository(database.DB)
 	buildingRepo := repository.NewBuildingRepository(database.DB)
-	systemRepo := repository.NewSystemRepository(database.DB)
+	projectRepo := repository.NewProjectRepository(database.DB)
+	effMeasureRepo := repository.NewEfficiencyMeasureRepository(database.DB)
+	contractorRepo := repository.NewContractorRepository(database.DB)
+	bmsRepo := repository.NewBmsRepository(database.DB)
+	weatherStationRepo := repository.NewWeatherStationRepository(database.DB)
+	meterRepo := repository.NewMeterRepository(database.DB)
+	targetRepo := repository.NewTargetRepository(database.DB)
+	subsidyRepo := repository.NewSubsidyRepository(database.DB)
+	billRepo := repository.NewBillRepository(database.DB)
 	equipmentRepo := repository.NewEquipmentRepository(database.DB)
+	categoryRepo := repository.NewCategoryRepository(database.DB)
+	regressionRepo := repository.NewRegressionRepository(database.DB)
 	parameterRepo := repository.NewParameterRepository(database.DB)
-	areaRepo := repository.NewAreaRepository(database.DB)
+	independantVariableRepo := repository.NewIndependantVariableRepository(database.DB)
 
 	// Auth features
 	authService := services.NewAuthService(*userRepo, *accountRepo)
@@ -62,27 +71,106 @@ func main() {
 	userService := services.NewUserService(*userRepo, *accountRepo)
 	userHandler := handlers.NewUserHandler(userService)
 
-	buildingService := services.NewBuildingService(*buildingRepo, *systemRepo, *equipmentRepo, areaRepo, *parameterRepo)
-	buildingHandler := handlers.NewBuildingHandler(accountService, &buildingService)
+	// Building features
+	buildingService := services.NewBuildingService(buildingRepo)
+	buildingHandler := handlers.NewBuildingHandler(buildingService)
 
-	// Collect features
+	// Project features
+	projectService := services.NewProjectService(projectRepo)
+	projectHandler := handlers.NewProjectHandler(projectService)
+
+	// Efficiency Measure features
+	effMeasureService := services.NewEfficiencyMeasureService(effMeasureRepo)
+	efficiencyMeasureHandler := handlers.NewEfficiencyMeasureHandler(effMeasureService)
+
+	// Contractor features
+	contractorService := services.NewContractorService(contractorRepo)
+	contractorHandler := handlers.NewContractorHandler(contractorService)
+
+	// Bms features
+	bmsService := services.NewBmsService(bmsRepo)
+	bmsHandler := handlers.NewBmsHandler(bmsService)
+
+	// WeatherStation features
+	weatherStationService := services.NewWeatherStationService(weatherStationRepo)
+	weatherStationHandler := handlers.NewWeatherStationHandler(weatherStationService)
+
+	independantVariableService := services.NewIndependantVariableService(independantVariableRepo)
+	independantVariableHandler := handlers.NewIndependantVariableHandler(independantVariableService)
+
+	// Weather CSV Upload features
 	influxClient = influxdb.NewClient()
 	if influxClient == nil {
 		log.Fatal("Failed to initialize InfluxDB client")
 	}
+	weatherUploadHandler := handlers.NewWeatherUploadHandler(influxClient)
 
-	log.Println("✅ Connected to InfluxDB successfully")
+	// Regression features
+	regressionService := services.NewRegressionService(regressionRepo)
+	regressionHandler := handlers.NewRegressionHandler(regressionService)
+
+	// Meter features
+	meterService := services.NewMeterService(meterRepo)
+	meterHandler := handlers.NewMeterHandler(meterService)
+
+	// Target features
+	targetService := services.NewTargetService(targetRepo)
+	targetHandler := handlers.NewTargetHandler(targetService)
+
+	// Subsidy features
+	subsidyService := services.NewSubsidyService(subsidyRepo)
+	subsidyHandler := handlers.NewSubsidyHandler(subsidyService)
+
+	// Bill features
+	billService := services.NewBillService(billRepo)
+	billHandler := handlers.NewBillHandler(billService)
+
+	// Equipment features
+	equipmentService := services.NewEquipmentService(equipmentRepo)
+	equipmentHandler := handlers.NewEquipmentHandler(equipmentService)
+
+	// Category features
+	categoryService := services.NewCategoryService(categoryRepo)
+	categoryHandler := handlers.NewCategoryHandler(categoryService)
+
+	// Collect features
 	trendlogsService := services.NewTrendlogsService(influxClient)
 	trendlogsHandler := handlers.NewTrendlogsHandler(trendlogsService)
-
-	// Initialize CollectService with the InfluxDB client
 	collectService = services.NewCollectService(influxClient)
 	collectHandler := handlers.NewCollectHandler(collectService)
-
 	savingsService := services.NewSavingsService(influxClient)
 	savingsHandler := handlers.NewSavingsHandler(savingsService)
 
-	router := app.SetupRouter(authHandler, accountHandler, userHandler, buildingHandler, userRepo, collectHandler, trendlogsHandler, savingsHandler)
+	// Instantiate Parameter features
+	parameterService := services.NewParameterService(parameterRepo)
+	parameterHandler := handlers.NewParameterHandler(parameterService)
+
+	// Setup router with all handlers.
+	router := app.SetupRouter(
+		authHandler,
+		accountHandler,
+		userHandler,
+		buildingHandler,
+		projectHandler,
+		efficiencyMeasureHandler,
+		contractorHandler,
+		bmsHandler,
+		weatherStationHandler,
+		weatherUploadHandler,
+		regressionHandler,
+		meterHandler,
+		targetHandler,
+		subsidyHandler,
+		billHandler,
+		equipmentHandler,
+		categoryHandler,
+		parameterHandler,
+		independantVariableHandler,
+		userRepo,
+		collectHandler,
+		trendlogsHandler,
+		savingsHandler,
+	)
 
 	srv := &http.Server{
 		Addr:    ":8080",

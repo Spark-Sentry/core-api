@@ -1,38 +1,51 @@
 package repository
 
 import (
-	"core-api/internal/app/dto"
 	"core-api/internal/domain/entities"
 	"gorm.io/gorm"
 )
 
-// EquipmentRepository handles database operations for Equipment.
-type EquipmentRepository struct {
+// EquipmentRepository handles database operations for equipments.
+type EquipmentRepository interface {
+	CreateEquipment(equip *entities.Equipment) error
+	ListAllEquipments() ([]entities.Equipment, error)
+	FindEquipmentByID(id uint) (*entities.Equipment, error)
+	UpdateEquipmentByID(id uint, updateData map[string]interface{}) error
+	DeleteEquipmentByID(id uint) error
+}
+
+type equipmentRepository struct {
 	db *gorm.DB
 }
 
-func NewEquipmentRepository(db *gorm.DB) *EquipmentRepository {
-	return &EquipmentRepository{db: db}
+// NewEquipmentRepository creates a new instance of EquipmentRepository.
+func NewEquipmentRepository(db *gorm.DB) EquipmentRepository {
+	return &equipmentRepository{db: db}
 }
 
-// AddEquipment adds new Equipment to the database.
-func (r *EquipmentRepository) AddEquipment(equipment *entities.Equipment) error {
-	return r.db.Create(equipment).Error
+func (r *equipmentRepository) CreateEquipment(equip *entities.Equipment) error {
+	return r.db.Create(equip).Error
 }
 
-// FindBySystemID retrieves all equipments associated with a specific system.
-func (r *EquipmentRepository) FindBySystemID(systemID uint) ([]entities.Equipment, error) {
+func (r *equipmentRepository) ListAllEquipments() ([]entities.Equipment, error) {
 	var equipments []entities.Equipment
-	err := r.db.Preload("System").Where("system_id = ?", systemID).Find(&equipments).Error
+	err := r.db.Preload("Parameters").Find(&equipments).Error
 	return equipments, err
 }
 
-// UpdateEquipment updates an existing piece of equipment with new details.
-func (r *EquipmentRepository) UpdateEquipment(equipmentID uint, updateDTO dto.EquipmentUpdateDTO) error {
-	return r.db.Model(&entities.Equipment{}).Where("id = ?", equipmentID).Updates(entities.Equipment{Tag: updateDTO.Tag, Description: updateDTO.Description}).Error
+func (r *equipmentRepository) FindEquipmentByID(id uint) (*entities.Equipment, error) {
+	var equip entities.Equipment
+	err := r.db.Preload("Parameters").First(&equip, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &equip, nil
 }
 
-// DeleteEquipment deletes an existing piece of equipment.
-func (r *EquipmentRepository) DeleteEquipment(equipmentID uint) error {
-	return r.db.Delete(&entities.Equipment{}, equipmentID).Error
+func (r *equipmentRepository) UpdateEquipmentByID(id uint, updateData map[string]interface{}) error {
+	return r.db.Model(&entities.Equipment{}).Where("id = ?", id).Updates(updateData).Error
+}
+
+func (r *equipmentRepository) DeleteEquipmentByID(id uint) error {
+	return r.db.Delete(&entities.Equipment{}, id).Error
 }

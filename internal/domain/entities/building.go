@@ -2,12 +2,15 @@ package entities
 
 import "gorm.io/gorm"
 
+// Building represents a building in the system.
 type Building struct {
-	ID        uint   `gorm:"primaryKey"`            // Identifiant unique du bâtiment
-	AccountID uint   `gorm:"not null"`              // ID du compte associé au bâtiment
-	Name      string `gorm:"size:255;not null"`     // Nom du bâtiment
-	Address   string `gorm:"size:255"`              // Adresse du bâtiment
-	Group     string `gorm:"type:text"`             // Groupe ou catégorie du bâtiment
-	Areas     []Area `gorm:"foreignKey:BuildingID"` // Les zones associées à ce bâtiment
 	gorm.Model
+	AccountID  uint      `gorm:"not null"`              // Associated account ID
+	Name       string    `gorm:"size:255;not null"`     // Building name
+	Address    string    `gorm:"size:255"`              // Building address
+	Group      string    `gorm:"type:text"`             // Group or category of the building
+	Bills      []Bill    `gorm:"foreignKey:BuildingID"` // Associated bills
+	Projects   []Project `gorm:"foreignKey:BuildingID"` // Associated projects
+	CategoryID *uint     // Optional: linked category ID
+	Category   Category  // Associated category (if any)
 }
