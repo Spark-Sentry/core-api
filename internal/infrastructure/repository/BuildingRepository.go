@@ -5,38 +5,43 @@ import (
 	"gorm.io/gorm"
 )
 
-type BuildingRepository struct {
+type BuildingRepository interface {
+	CreateBuilding(building *entities.Building) error
+	FindAllByAccountID(accountID uint) ([]entities.Building, error)
+	UpdateBuilding(buildingID uint, updatedBuilding entities.Building) error
+}
+
+type buildingRepository struct {
 	db *gorm.DB
 }
 
-func NewBuildingRepository(db *gorm.DB) *BuildingRepository {
-	return &BuildingRepository{db: db}
+func NewBuildingRepository(db *gorm.DB) BuildingRepository {
+	return &buildingRepository{db: db}
 }
 
-// CreateBuilding creates a new Building with its associated Areas in the database.
-func (r *BuildingRepository) CreateBuilding(building *entities.Building) error {
-	// Use a transaction to ensure atomicity
+func (r *buildingRepository) CreateBuilding(building *entities.Building) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
-		areas := building.Areas
-		building.Areas = nil
-
 		if err := tx.Create(building).Error; err != nil {
 			return err
 		}
-
-		for i := range areas {
-			areas[i].BuildingID = building.ID
-			if err := tx.Create(&areas[i]).Error; err != nil {
-				return err
-			}
-		}
-
 		return nil
 	})
 }
 
-func (r *BuildingRepository) FindAllByAccountID(accountID uint) ([]entities.Building, error) {
+func (r *buildingRepository) FindAllByAccountID(accountID uint) ([]entities.Building, error) {
 	var buildings []entities.Building
-	err := r.db.Where("account_id = ?", accountID).Preload("Areas").Find(&buildings).Error
+	err := r.db.Where("account_id = ?", accountID).
+		Preload("Projects").
+		Preload("Category").
+		Preload("Bills").
+		Find(&buildings).Error
 	return buildings, err
+}
+
+func (r *buildingRepository) UpdateBuilding(buildingID uint, updatedBuilding entities.Building) error {
+	return r.db.Model(&entities.Building{}).Where("id = ?", buildingID).Updates(map[string]interface{}{
+		"name":        updatedBuilding.Name,
+		"address":     updatedBuilding.Address,
+		"category_id": updatedBuilding.CategoryID,
+	}).Error
 }

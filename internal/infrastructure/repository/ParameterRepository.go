@@ -5,54 +5,50 @@ import (
 	"gorm.io/gorm"
 )
 
-// ParameterRepository defines the methods to interact with the Parameter table.
-type ParameterRepository struct {
+type ParameterRepository interface {
+	Create(param *entities.Parameter) error
+	ListAll() ([]entities.Parameter, error)
+	FindByID(id uint) (*entities.Parameter, error)
+	Update(id uint, updateData map[string]interface{}) error
+	Delete(id uint) error
+	DB() *gorm.DB
+}
+
+type parameterRepository struct {
 	db *gorm.DB
 }
 
-// NewParameterRepository creates a new instance of ParameterRepository.
-func NewParameterRepository(db *gorm.DB) *ParameterRepository {
-	return &ParameterRepository{db: db}
+func NewParameterRepository(db *gorm.DB) ParameterRepository {
+	return &parameterRepository{db: db}
 }
 
-// Create creates a new Parameter in the database.
-func (r *ParameterRepository) Create(parameter *entities.Parameter) error {
-	return r.db.Create(parameter).Error
+func (r *parameterRepository) Create(param *entities.Parameter) error {
+	return r.db.Create(param).Error
 }
 
-// FindByID retrieves a Parameter by its ID.
-func (r *ParameterRepository) FindByID(id uint) (*entities.Parameter, error) {
-	var parameter entities.Parameter
-	if err := r.db.Preload("Equipment").First(&parameter, id).Error; err != nil {
+func (r *parameterRepository) ListAll() ([]entities.Parameter, error) {
+	var params []entities.Parameter
+	err := r.db.Preload("EfficiencyMeasures").Find(&params).Error
+	return params, err
+}
+
+func (r *parameterRepository) FindByID(id uint) (*entities.Parameter, error) {
+	var param entities.Parameter
+	err := r.db.Preload("EfficiencyMeasures").First(&param, id).Error
+	if err != nil {
 		return nil, err
 	}
-	return &parameter, nil
+	return &param, nil
 }
 
-// FindAll retrieves all Parameters from the database.
-func (r *ParameterRepository) FindAll() ([]entities.Parameter, error) {
-	var parameters []entities.Parameter
-	if err := r.db.Preload("Equipment").Find(&parameters).Error; err != nil {
-		return nil, err
-	}
-	return parameters, nil
+func (r *parameterRepository) Update(id uint, updateData map[string]interface{}) error {
+	return r.db.Model(&entities.Parameter{}).Where("id = ?", id).Updates(updateData).Error
 }
 
-// Update updates an existing Parameter in the database.
-func (r *ParameterRepository) Update(parameter *entities.Parameter) error {
-	return r.db.Save(parameter).Error
-}
-
-// Delete deletes a Parameter from the database by ID.
-func (r *ParameterRepository) Delete(id uint) error {
+func (r *parameterRepository) Delete(id uint) error {
 	return r.db.Delete(&entities.Parameter{}, id).Error
 }
 
-// FindByEquipmentID retrieves all Parameters associated with a specific Equipment ID.
-func (r *ParameterRepository) FindByEquipmentID(equipmentID uint) ([]entities.Parameter, error) {
-	var parameters []entities.Parameter
-	if err := r.db.Where("equipment_id = ?", equipmentID).Find(&parameters).Error; err != nil {
-		return nil, err
-	}
-	return parameters, nil
+func (r *parameterRepository) DB() *gorm.DB {
+	return r.db
 }

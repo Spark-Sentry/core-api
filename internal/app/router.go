@@ -7,11 +7,45 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// SetupRouter configures all routes for the API.
+// CHANGES:
+//   - Added new parameters "projectHandler", "efficiencyMeasureHandler", "contractorHandler", "bmsHandler",
+//     "weatherStationHandler", "weatherUploadHandler", "regressionHandler", "meterHandler", "targetHandler",
+//     "subsidyHandler", "billHandler", "equipmentHandler" and "categoryHandler" for the corresponding endpoints.
+//   - For Regression:
+//     POST   "/regressions"         -> CreateRegression
+//     GET    "/regressions"         -> ListRegressions
+//     GET    "/regressions/:id"     -> GetRegressionByID
+//     PUT    "/regressions/:id"     -> UpdateRegression
+//     DELETE "/regressions/:id"     -> DeleteRegression
+//   - For Equipment:
+//     POST   "/equipments"          -> CreateEquipment
+//     GET    "/equipments"          -> ListAllEquipments
+//     GET    "/equipments/:id"      -> GetEquipmentByID
+//     PUT    "/equipments/:id"      -> UpdateEquipment
+//     DELETE "/equipments/:id"      -> DeleteEquipment
+//   - For Category:
+//     GET    "/categories"          -> ListCategories
 func SetupRouter(
 	authHandler *handlers.AuthHandler,
 	accountHandler *handlers.AccountHandler,
 	userHandler *handlers.UserHandler,
-	buildingHandler *handlers.BuildingHandler,
+	buildingHandler *handlers.BuildingHandler, // Building endpoints
+	projectHandler *handlers.ProjectHandler, // Project endpoints
+	efficiencyMeasureHandler *handlers.EfficiencyMeasureHandler, // Efficiency Measure endpoints
+	contractorHandler *handlers.ContractorHandler, // Contractor endpoints
+	bmsHandler *handlers.BmsHandler, // Bms endpoints
+	weatherStationHandler *handlers.WeatherStationHandler, // WeatherStation endpoints
+	weatherUploadHandler *handlers.WeatherUploadHandler, // Weather CSV upload endpoint
+	regressionHandler *handlers.RegressionHandler, // Regression endpoints
+	meterHandler *handlers.MeterHandler, // Meter endpoints
+	targetHandler *handlers.TargetHandler, // Target endpoints
+	subsidyHandler *handlers.SubsidyHandler, // Subsidy endpoints
+	billHandler *handlers.BillHandler, // Bill endpoints
+	equipmentHandler *handlers.EquipmentHandler, // Equipment endpoints
+	categoryHandler *handlers.CategoryHandler, // Category endpoints
+	parameterHandler *handlers.ParameterHandler, // Parameter endpoints
+	independantVariableHandler *handlers.IndependantVariableHandler, // IndependantVariable endpoints
 	userRepo *repository.UserRepository,
 	collectHandler *handlers.CollectHandler,
 	trendlogsHandler *handlers.TrendlogsHandler,
@@ -22,82 +56,131 @@ func SetupRouter(
 	router.Use(CORSMiddleware())
 
 	router.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "ready",
-		})
+		c.JSON(200, gin.H{"message": "ready"})
 	})
+
 	apiV1 := router.Group("/api/v1")
 	{
 		apiV1.POST("/login", authHandler.Login)
 		apiV1.POST("/register", authHandler.Register)
 
-		authenticatedRoutes := apiV1.Group("/")
-		authenticatedRoutes.Use(middleware.JWTAuthMiddleware(*userRepo))
+		authRoutes := apiV1.Group("/")
+		authRoutes.Use(middleware.JWTAuthMiddleware(*userRepo))
 		{
-			authenticatedRoutes.GET("/securedata", func(c *gin.Context) {
-				c.JSON(200, gin.H{
-					"message": "Secured page",
-				})
+			// User and Account routes
+			authRoutes.GET("/securedata", func(c *gin.Context) {
+				c.JSON(200, gin.H{"message": "Secured page"})
 			})
-			authenticatedRoutes.GET("/users/me", userHandler.UsersMe)
-			authenticatedRoutes.POST("/accounts", accountHandler.CreateAccount)
-			authenticatedRoutes.GET("/accounts", accountHandler.ListAllAccounts)
-			authenticatedRoutes.GET("/accounts/:id", accountHandler.GetAccountByID)
-			authenticatedRoutes.POST("/accounts/users", accountHandler.AssociateUserToAccount)
+			authRoutes.GET("/users/me", userHandler.UsersMe)
+			authRoutes.POST("/accounts", accountHandler.CreateAccount)
+			authRoutes.GET("/accounts", accountHandler.ListAllAccounts)
+			authRoutes.GET("/accounts/:id", accountHandler.GetAccountByID)
+			authRoutes.POST("/accounts/users", accountHandler.AssociateUserToAccount)
 
-			// Building Routes
-			// Create a new building
-			authenticatedRoutes.POST("/buildings", buildingHandler.HandleCreateBuilding) // "Create a new building."
-			// List all buildings for the authenticated account
-			authenticatedRoutes.GET("/buildings", buildingHandler.GetAllBuildings) // "Retrieve all buildings associated with the authenticated account."
+			// Building endpoints
+			authRoutes.POST("/buildings", buildingHandler.CreateBuilding)
+			authRoutes.GET("/buildings", buildingHandler.GetAllBuildings)
+			authRoutes.PUT("/buildings/:id", buildingHandler.UpdateBuilding)
 
-			// Area Management Routes
-			// Create an area within a specific building
-			authenticatedRoutes.POST("/buildings/:building_id/areas", buildingHandler.AddArea) // "Add a new area to a specific building."
-			// Retrieve all areas of a specific building
-			authenticatedRoutes.GET("/buildings/:building_id/areas", buildingHandler.GetAreasByBuildingID) // "Retrieve all areas associated with a specific building."
-			// Update a specific area (if needed)
-			authenticatedRoutes.PUT("/areas/:area_id", buildingHandler.UpdateArea) // "Update details of a specific area."
-			// Delete a specific area (if needed)
-			authenticatedRoutes.DELETE("/areas/:area_id", buildingHandler.DeleteArea) // "Delete a specific area."
+			// Project endpoints
+			authRoutes.POST("/projects", projectHandler.CreateProject)
+			authRoutes.GET("/projects", projectHandler.ListAllProjects)
+			authRoutes.GET("/projects/:id", projectHandler.GetProjectByID)
+			authRoutes.PUT("/projects/:id", projectHandler.UpdateProject)
 
-			// System Management Routes
-			// Add a new system to a specific area within a building
-			authenticatedRoutes.POST("/buildings/:building_id/areas/:area_id/systems", buildingHandler.AddSystem) // "Create a new system within a specific area of a building."
-			// Retrieve all systems associated with a specific area within a building
-			authenticatedRoutes.GET("/buildings/:building_id/areas/:area_id/systems", buildingHandler.GetSystemsByAreaID) // "List all systems within a specific area of a building."
-			// Update a specific system (if needed)
-			authenticatedRoutes.PUT("/systems/:system_id", buildingHandler.UpdateSystem) // "Update details of a specific system."
-			// Delete a specific system
-			authenticatedRoutes.DELETE("/systems/:system_id", buildingHandler.DeleteSystem) // "Remove a specific system."
+			// Efficiency Measure endpoints
+			authRoutes.POST("/efficiencymeasures", efficiencyMeasureHandler.CreateEfficiencyMeasure)
+			authRoutes.GET("/efficiencymeasures", efficiencyMeasureHandler.ListEfficiencyMeasures)
+			authRoutes.GET("/efficiencymeasures/:id", efficiencyMeasureHandler.GetEfficiencyMeasureByID)
+			authRoutes.PUT("/efficiencymeasures/:id", efficiencyMeasureHandler.UpdateEfficiencyMeasure)
 
-			// Equipment Management Routes
-			// Add new equipment to a specific system
-			authenticatedRoutes.POST("/systems/:system_id/equipments", buildingHandler.AddEquipmentToSystem) // "Add new equipment to a specific system."
-			// Retrieve all equipment associated with a specific system
-			authenticatedRoutes.GET("/systems/:system_id/equipments", buildingHandler.GetEquipmentsBySystemID) // "List all equipments within a specific system."
-			// Update a specific piece of equipment (if needed)
-			authenticatedRoutes.PUT("/equipments/:equipment_id", buildingHandler.UpdateEquipment) // "Update details of a specific piece of equipment."
-			// Delete a specific piece of equipment
-			authenticatedRoutes.DELETE("/equipments/:equipment_id", buildingHandler.DeleteEquipment) // "Remove a specific piece of equipment."
+			// Contractor endpoints
+			authRoutes.POST("/contractors", contractorHandler.CreateContractor)
+			authRoutes.GET("/contractors", contractorHandler.ListAllContractors)
+			authRoutes.GET("/contractors/:id", contractorHandler.GetContractorByID)
+			authRoutes.PUT("/contractors/:id", contractorHandler.UpdateContractor)
+			authRoutes.DELETE("/contractors/:id", contractorHandler.DeleteContractor)
 
-			// Parameter Management Routes
-			// Add a new parameter to a specific equipment
-			authenticatedRoutes.POST("/equipments/:equipment_id/parameters", buildingHandler.AddParameterToEquipment) // "Add a new parameter to a specific equipment."
-			// Retrieve all parameters associated with a specific equipment
-			authenticatedRoutes.GET("/equipments/:equipment_id/parameters", buildingHandler.GetParametersByEquipmentID) // "List all parameters associated with a specific equipment."
-			// Collect Data Routes
-			// Collect data handler main
-			authenticatedRoutes.POST("/collect", collectHandler.CollectHandler) // "Collect data for a specific parameter."
+			// Bms endpoints
+			authRoutes.POST("/bms", bmsHandler.CreateBms)
+			authRoutes.GET("/bms", bmsHandler.ListBms)
+			authRoutes.GET("/bms/:id", bmsHandler.GetBmsByID)
+			authRoutes.PUT("/bms/:id", bmsHandler.UpdateBms)
+			authRoutes.DELETE("/bms/:id", bmsHandler.DeleteBms)
 
-			// Trendlogs route
-			// Retrieve timeseries data
-			authenticatedRoutes.POST("/trendlogs", trendlogsHandler.GetTrendlogs)
+			// WeatherStation endpoints
+			authRoutes.POST("/weatherstations", weatherStationHandler.CreateWeatherStation)
+			authRoutes.GET("/weatherstations", weatherStationHandler.ListWeatherStations)
+			authRoutes.GET("/weatherstations/:id", weatherStationHandler.GetWeatherStationByID)
+			authRoutes.PUT("/weatherstations/:id", weatherStationHandler.UpdateWeatherStation)
+			authRoutes.DELETE("/weatherstations/:id", weatherStationHandler.DeleteWeatherStation)
 
-			// Savings route
-			// Retrieve savings data
-			authenticatedRoutes.POST("/savings", savingsHandler.GetSavings)
+			// Weather CSV Upload endpoint
+			authRoutes.POST("/weather/upload", weatherUploadHandler.UploadWeatherCSV)
 
+			// Regression endpoints
+			authRoutes.POST("/regressions", regressionHandler.CreateRegression)
+			authRoutes.GET("/regressions", regressionHandler.ListRegressions)
+			authRoutes.GET("/regressions/:id", regressionHandler.GetRegressionByID)
+			authRoutes.PUT("/regressions/:id", regressionHandler.UpdateRegression)
+			authRoutes.DELETE("/regressions/:id", regressionHandler.DeleteRegression)
+
+			// Meter endpoints
+			authRoutes.POST("/meters", meterHandler.CreateMeter)
+			authRoutes.GET("/meters", meterHandler.ListAllMeters)
+			authRoutes.GET("/meters/:id", meterHandler.GetMeterByID)
+			authRoutes.PUT("/meters/:id", meterHandler.UpdateMeter)
+			authRoutes.DELETE("/meters/:id", meterHandler.DeleteMeter)
+
+			// Target endpoints
+			authRoutes.POST("/targets", targetHandler.CreateTarget)
+			authRoutes.GET("/targets", targetHandler.ListTargets)
+			authRoutes.GET("/targets/:id", targetHandler.GetTargetByID)
+			authRoutes.PUT("/targets/:id", targetHandler.UpdateTarget)
+			authRoutes.DELETE("/targets/:id", targetHandler.DeleteTarget)
+
+			// Subsidy endpoints
+			authRoutes.POST("/subsidies", subsidyHandler.CreateSubsidy)
+			authRoutes.GET("/subsidies", subsidyHandler.ListSubsidies)
+			authRoutes.GET("/subsidies/:id", subsidyHandler.GetSubsidyByID)
+			authRoutes.PUT("/subsidies/:id", subsidyHandler.UpdateSubsidy)
+			authRoutes.DELETE("/subsidies/:id", subsidyHandler.DeleteSubsidy)
+
+			// Bill endpoints
+			authRoutes.POST("/bills", billHandler.CreateBill)
+			authRoutes.GET("/bills", billHandler.ListBills)
+			authRoutes.GET("/bills/:id", billHandler.GetBillByID)
+			authRoutes.PUT("/bills/:id", billHandler.UpdateBill)
+			authRoutes.DELETE("/bills/:id", billHandler.DeleteBill)
+
+			// Equipment endpoints
+			authRoutes.POST("/equipments", equipmentHandler.CreateEquipment)
+			authRoutes.GET("/equipments", equipmentHandler.ListAllEquipments)
+			authRoutes.GET("/equipments/:id", equipmentHandler.GetEquipmentByID)
+			authRoutes.PUT("/equipments/:id", equipmentHandler.UpdateEquipment)
+			authRoutes.DELETE("/equipments/:id", equipmentHandler.DeleteEquipment)
+
+			// Category endpoints
+			authRoutes.GET("/categories", categoryHandler.ListCategories)
+
+			// Parameter endpoints
+			authRoutes.POST("/parameter", parameterHandler.CreateParameter)
+			authRoutes.GET("/parameter/:id", parameterHandler.GetParameterByID)
+			authRoutes.PUT("/parameter/:id", parameterHandler.UpdateParameter)
+
+			// IndependantVariable endpoints
+			authRoutes.POST("/independantvariables", independantVariableHandler.CreateIndependantVariable)
+			authRoutes.GET("/independantvariables", independantVariableHandler.ListIndependantVariables)
+			authRoutes.GET("/independantvariables/:id", independantVariableHandler.GetIndependantVariableByID)
+			authRoutes.PUT("/independantvariables/:id", independantVariableHandler.UpdateIndependantVariable)
+			authRoutes.DELETE("/independantvariables/:id", independantVariableHandler.DeleteIndependantVariable)
+
+			// Other routes
+			authRoutes.POST("/collect", collectHandler.CollectHandler)
+			authRoutes.GET("/trendlogs", trendlogsHandler.GetTrendlogs)
+			authRoutes.POST("/savings", savingsHandler.GetSavings)
+			authRoutes.GET("/savings/efficiency_measure_by_measurement", savingsHandler.GetEfficiencyMeasureByMeasurement)
+			authRoutes.GET("/savings/project_by_regression", savingsHandler.GetProjectByRegression)
 		}
 	}
 
@@ -110,12 +193,10 @@ func CORSMiddleware() gin.HandlerFunc {
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
 			return
 		}
-
 		c.Next()
 	}
 }

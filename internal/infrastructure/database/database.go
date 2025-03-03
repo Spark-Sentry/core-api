@@ -13,25 +13,25 @@ import (
 
 var DB *gorm.DB
 
-// createSuperAdmin creates a super admin user if it doesn't exist
+// createSuperAdmin creates a super admin user if it doesn't exist.
 func createSuperAdmin(db *gorm.DB) {
 	var count int64
-	var UserAdminEmail string = os.Getenv("USER_ADMIN_EMAIL")
-	var UserAdminPwd string = os.Getenv("USER_ADMIN_PWD")
+	userAdminEmail := os.Getenv("USER_ADMIN_EMAIL")
+	userAdminPwd := os.Getenv("USER_ADMIN_PWD")
 
-	err := godotenv.Load()
-	if err != nil {
+	// Ensure environment variables are loaded.
+	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	// Check if the account with ID = 1 exists
+	// Check if the account with ID = 1 exists.
 	accountID := uint(1)
 	var account entities.Account
 	if err := db.First(&account, accountID).Error; err != nil {
 		account = entities.Account{
 			ID:           accountID,
 			Name:         "Admin Account",
-			ContactEmail: UserAdminEmail,
+			ContactEmail: userAdminEmail,
 			ContactPhone: "1234567890",
 			Plan:         "Premium",
 		}
@@ -41,16 +41,16 @@ func createSuperAdmin(db *gorm.DB) {
 		log.Println("Admin account created successfully.")
 	}
 
-	// Check if the super admin user already exists
-	db.Model(&entities.User{}).Where("email = ?", UserAdminEmail).Count(&count)
+	// Check if the super admin user already exists.
+	db.Model(&entities.User{}).Where("email = ?", userAdminEmail).Count(&count)
 	if count == 0 {
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(UserAdminPwd), bcrypt.DefaultCost)
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userAdminPwd), bcrypt.DefaultCost)
 		if err != nil {
 			log.Fatalf("Failed to hash password: %v", err)
 		}
 
 		superAdmin := entities.User{
-			Email:     UserAdminEmail,
+			Email:     userAdminEmail,
 			Password:  string(hashedPassword),
 			FirstName: "Super",
 			LastName:  "Admin",
@@ -64,9 +64,63 @@ func createSuperAdmin(db *gorm.DB) {
 	}
 }
 
+// seedCategories inserts pre-registered categories along with their subcategories into the database if none exist.
+func seedCategories(db *gorm.DB) {
+	var count int64
+	if err := db.Model(&entities.Category{}).Count(&count).Error; err != nil {
+		log.Printf("Failed to count categories: %v", err)
+		return
+	}
+	if count > 0 {
+		log.Println("Categories already seeded.")
+		return
+	}
+
+	// Predefined categories with their subcategories.
+	predefinedCategories := []struct {
+		Name          string
+		Subcategories []string
+	}{
+		{"Residential Buildings", []string{"Single-family home", "Multi-family dwelling", "Apartment building", "Condominium", "Townhouse"}},
+		{"Commercial Buildings", []string{"Office building", "Retail store", "Shopping mall", "Hotel", "Restaurant"}},
+		{"Institutional Buildings", []string{"School", "University", "Hospital", "Government building", "Library"}},
+		{"Industrial Buildings", []string{"Factory", "Warehouse", "Power plant", "Research facility", "Distribution center"}},
+		{"Religious Buildings", []string{"Church", "Temple", "Mosque", "Synagogue", "Monastery"}},
+		{"Cultural/Entertainment Buildings", []string{"Museum", "Theater", "Concert hall", "Cinema", "Art gallery"}},
+		{"Sports/Recreational Buildings", []string{"Stadium", "Gymnasium", "Swimming pool", "Sports center", "Recreation center"}},
+		{"Transportation Buildings", []string{"Airport", "Train station", "Bus terminal", "Parking structure", "Ferry terminal"}},
+		{"Agricultural Buildings", []string{"Barn", "Greenhouse", "Silo", "Storage shed", "Processing facility"}},
+		{"Military/Defense Buildings", []string{"Barrack", "Armory", "Base", "Training facility", "Command center"}},
+	}
+
+	// Insert main categories and their subcategories.
+	for _, cat := range predefinedCategories {
+		mainCat := entities.Category{
+			Name: cat.Name,
+		}
+		if err := db.Create(&mainCat).Error; err != nil {
+			log.Printf("Failed to create category '%s': %v", cat.Name, err)
+			continue
+		}
+		log.Printf("Category '%s' created successfully.", cat.Name)
+		// Create subcategories.
+		for _, subName := range cat.Subcategories {
+			subCat := entities.Category{
+				Name:     subName,
+				ParentID: &mainCat.ID,
+			}
+			if err := db.Create(&subCat).Error; err != nil {
+				log.Printf("Failed to create subcategory '%s' for '%s': %v", subName, cat.Name, err)
+			} else {
+				log.Printf("Subcategory '%s' for '%s' created successfully.", subName, cat.Name)
+			}
+		}
+	}
+}
+
+// InitDB initializes the database connection, performs migrations, and seeds initial data.
 func InitDB() {
-	err := godotenv.Load()
-	if err != nil {
+	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
@@ -88,9 +142,33 @@ func InitDB() {
 
 	log.Println("🔌 Connected to the database successfully.")
 
-	if err := db.AutoMigrate(&entities.User{}, &entities.Account{}, &entities.Building{}, &entities.Area{}, &entities.Equipment{}, &entities.System{}, &entities.Parameter{}); err != nil {
+	// Auto-migrate only the entities that are currently used.
+	err = db.AutoMigrate(
+		&entities.User{},
+		&entities.Account{},
+		&entities.Building{},
+		&entities.Project{},
+		&entities.EfficiencyMeasure{},
+		&entities.Contractor{},
+		&entities.Coefficient{},
+		&entities.Bms{},
+		&entities.WeatherStation{},
+		&entities.Regression{},
+		&entities.Meter{},
+		&entities.Target{},
+		&entities.Subsidy{},
+		&entities.Bill{},
+		&entities.Category{},
+		&entities.Equipment{},
+		&entities.Parameter{},
+		&entities.Coefficient{},
+	)
+	if err != nil {
 		log.Fatalf("Failed to auto-migrate database schemas: %v", err)
 	}
 
+	// Create super admin user.
 	createSuperAdmin(db)
+	// Seed pre-registered categories and subcategories.
+	seedCategories(db)
 }

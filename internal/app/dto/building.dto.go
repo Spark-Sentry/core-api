@@ -1,15 +1,15 @@
 package dto
 
-// CreateBuildingRequest represents the required data to create a Building with at least one Area.
+// CreateBuildingRequest represents the data required to create a new building.
 type CreateBuildingRequest struct {
-	Name    string              `json:"name"`
-	Address string              `json:"address"`
-	Group   string              `json:"group"`
-	Areas   []CreateAreaRequest `json:"areas"` // Ensure there's at least one Area
+	Name       string `json:"name" binding:"required"`
+	Address    string `json:"address" binding:"required"`
+	CategoryID uint   `json:"categoryId" binding:"required"`
 }
 
-// CreateAreaRequest represents the data for creating an Area within a Building.
-type CreateAreaRequest struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
+// UpdateBuildingRequest represents the data required to update an existing building.
+type UpdateBuildingRequest struct {
+	Name       string `json:"name" binding:"required"`
+	Address    string `json:"address" binding:"required"`
+	CategoryID uint   `json:"categoryId" binding:"required"`
 }

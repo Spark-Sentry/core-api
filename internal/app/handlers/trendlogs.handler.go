@@ -20,18 +20,27 @@ func NewTrendlogsHandler(trendlogsService *services.TrendlogsService) *Trendlogs
 	}
 }
 
-// GetTrendlogs retrieves trend log data from InfluxDB and returns it to the client.
+// GetTrendlogs retrieves trend log data based on query parameters.
 func (h *TrendlogsHandler) GetTrendlogs(c *gin.Context) {
-	var params dto.TrendlogsParams
-	if err := c.ShouldBindJSON(&params); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON request body: " + err.Error()})
+	// Read query parameters
+	bucket := c.Query("bucket")
+	start := c.Query("start")
+	stop := c.Query("stop")
+	mesh := c.Query("mesh")
+	idParameters := c.QueryArray("idParameters")
+
+	// Validate required parameters
+	if bucket == "" || start == "" || stop == "" || mesh == "" || len(idParameters) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing required query parameters: bucket, start, stop, mesh, idParameters"})
 		return
 	}
 
-	// Validate minimal required fields
-	if params.Bucket == "" || params.TimeStart == "" || params.TimeStop == "" || len(params.IdParameters) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing required fields (bucket, timeStart, timeStop, idParameters)"})
-		return
+	params := dto.TrendlogsParams{
+		Bucket:       bucket,
+		TimeStart:    start,
+		TimeStop:     stop,
+		IdParameters: idParameters,
+		Mesh:         mesh,
 	}
 
 	dataPoints, err := h.trendlogsService.RetrieveTrendlogs(context.Background(), params)
