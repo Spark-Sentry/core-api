@@ -76,7 +76,7 @@ func main() {
 	buildingHandler := handlers.NewBuildingHandler(buildingService)
 
 	// Project features
-	projectService := services.NewProjectService(projectRepo)
+	projectService := services.NewProjectService(projectRepo, targetRepo)
 	projectHandler := handlers.NewProjectHandler(projectService)
 
 	// Efficiency Measure features
@@ -106,7 +106,7 @@ func main() {
 	weatherUploadHandler := handlers.NewWeatherUploadHandler(influxClient)
 
 	// Regression features
-	regressionService := services.NewRegressionService(regressionRepo)
+	regressionService := services.NewRegressionService(regressionRepo, meterRepo)
 	regressionHandler := handlers.NewRegressionHandler(regressionService)
 
 	// Meter features
@@ -138,11 +138,11 @@ func main() {
 	trendlogsHandler := handlers.NewTrendlogsHandler(trendlogsService)
 	collectService = services.NewCollectService(influxClient)
 	collectHandler := handlers.NewCollectHandler(collectService)
-	savingsService := services.NewSavingsService(influxClient)
+	savingsService := services.NewSavingsService(influxClient, regressionRepo)
 	savingsHandler := handlers.NewSavingsHandler(savingsService)
 
 	// Instantiate Parameter features
-	parameterService := services.NewParameterService(parameterRepo)
+	parameterService := services.NewParameterService(parameterRepo, effMeasureRepo)
 	parameterHandler := handlers.NewParameterHandler(parameterService)
 
 	// Setup router with all handlers.

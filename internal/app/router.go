@@ -80,6 +80,7 @@ func SetupRouter(
 			// Building endpoints
 			authRoutes.POST("/buildings", buildingHandler.CreateBuilding)
 			authRoutes.GET("/buildings", buildingHandler.GetAllBuildings)
+			authRoutes.PUT("/buildings/:id", buildingHandler.UpdateBuilding)
 
 			// Project endpoints
 			authRoutes.POST("/projects", projectHandler.CreateProject)
@@ -163,11 +164,9 @@ func SetupRouter(
 			authRoutes.GET("/categories", categoryHandler.ListCategories)
 
 			// Parameter endpoints
-			authRoutes.POST("/parameters", parameterHandler.CreateParameter)
-			authRoutes.GET("/parameters", parameterHandler.ListParameters)
-			authRoutes.GET("/parameters/:id", parameterHandler.GetParameterByID)
-			authRoutes.PUT("/parameters/:id", parameterHandler.UpdateParameter)
-			authRoutes.DELETE("/parameters/:id", parameterHandler.DeleteParameter)
+			authRoutes.POST("/parameter", parameterHandler.CreateParameter)
+			authRoutes.GET("/parameter/:id", parameterHandler.GetParameterByID)
+			authRoutes.PUT("/parameter/:id", parameterHandler.UpdateParameter)
 
 			// IndependantVariable endpoints
 			authRoutes.POST("/independantvariables", independantVariableHandler.CreateIndependantVariable)
@@ -178,8 +177,10 @@ func SetupRouter(
 
 			// Other routes
 			authRoutes.POST("/collect", collectHandler.CollectHandler)
-			authRoutes.POST("/trendlogs", trendlogsHandler.GetTrendlogs)
+			authRoutes.GET("/trendlogs", trendlogsHandler.GetTrendlogs)
 			authRoutes.POST("/savings", savingsHandler.GetSavings)
+			authRoutes.GET("/savings/efficiency_measure_by_measurement", savingsHandler.GetEfficiencyMeasureByMeasurement)
+			authRoutes.GET("/savings/project_by_regression", savingsHandler.GetProjectByRegression)
 		}
 	}
 

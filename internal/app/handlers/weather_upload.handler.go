@@ -61,18 +61,16 @@ func (h *WeatherUploadHandler) UploadWeatherCSV(c *gin.Context) {
 		// Expected columns (example):
 		// 0: longitude, 1: latitude, 2: station_name, 3: climate_id, 4: datetime,
 		// 9: temperature, 11: dew_point, 13: humidity, 23: pressure, 29: weather
-		if len(record) < 30 {
-			continue
-		}
-		// Variables 'longitude' and 'latitude' were removed as they are not used.
+
+		fmt.Println(record)
 		stationName := record[2]
 		climateID := record[3]
 		datetime := record[4]
-		temperature, _ := strconv.ParseFloat(record[9], 64)
-		dewPoint, _ := strconv.ParseFloat(record[11], 64)
-		humidity, _ := strconv.ParseFloat(record[13], 64)
-		pressure, _ := strconv.ParseFloat(record[23], 64)
-		weatherDesc := record[29]
+		temperature, _ := strconv.ParseFloat(record[5], 64)
+		dewPoint, _ := strconv.ParseFloat(record[6], 64)
+		humidity, _ := strconv.ParseFloat(record[7], 64)
+		pressure, _ := strconv.ParseFloat(record[8], 64)
+		weatherDesc := record[9]
 
 		t, err := time.Parse(time.RFC3339, datetime)
 		if err != nil {

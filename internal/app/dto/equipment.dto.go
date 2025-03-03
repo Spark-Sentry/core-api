@@ -4,7 +4,6 @@ package dto
 type CreateEquipmentRequest struct {
 	Name string `json:"name" binding:"required"` // Equipment name
 	Tag  string `json:"tag" binding:"required"`  // Equipment tag (unique)
-	// Note: Parameters are managed separately via the Parameter endpoints.
 }
 
 // UpdateEquipmentRequest represents the data required to update existing equipment.

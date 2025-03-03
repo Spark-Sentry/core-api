@@ -9,7 +9,7 @@ import (
 
 // ProjectService defines operations related to projects.
 type ProjectService interface {
-	CreateProject(project *entities.Project) error
+	CreateProject(req dto.CreateProjectRequest) (*entities.Project, error)
 	ListAllProjects() ([]entities.Project, error)
 	GetProjectByID(id uint) (*entities.Project, error)
 	UpdateProjectByID(id uint, req dto.UpdateProjectRequest) error
@@ -17,21 +17,47 @@ type ProjectService interface {
 
 type projectService struct {
 	projectRepo repository.ProjectRepository
+	targetRepo  repository.TargetRepository
 }
 
 // NewProjectService creates a new instance of ProjectService.
-func NewProjectService(projectRepo repository.ProjectRepository) ProjectService {
+func NewProjectService(projectRepo repository.ProjectRepository, targetRepo repository.TargetRepository) ProjectService {
 	return &projectService{
 		projectRepo: projectRepo,
+		targetRepo:  targetRepo,
 	}
 }
 
-// CreateProject validates and creates a new project.
-func (s *projectService) CreateProject(project *entities.Project) error {
-	if project.Name == "" || project.BuildingID == 0 || project.ContractorID == 0 || project.ImplementationDate == "" {
-		return fmt.Errorf("invalid project data")
+// CreateProject creates a new project along with its associated targets.
+func (s *projectService) CreateProject(req dto.CreateProjectRequest) (*entities.Project, error) {
+	project := &entities.Project{
+		BuildingID:         req.BuildingID,
+		Name:               req.Name,
+		ContractorID:       req.ContractorID,
+		ImplementationDate: req.ImplementationDate,
+		EfficiencyCost:     req.EfficiencyCost,
+		MaintenanceCost:    req.MaintenanceCost,
 	}
-	return s.projectRepo.CreateProject(project)
+
+	if err := s.projectRepo.CreateProject(project); err != nil {
+		return nil, fmt.Errorf("failed to create project: %w", err)
+	}
+
+	// Create each target and associate it with the project.
+	for _, t := range req.Targets {
+		target := entities.Target{
+			Name:      t.Name,
+			Value:     t.Value,
+			Type:      t.Type,
+			ProjectID: &project.ID,
+		}
+		if err := s.targetRepo.CreateTarget(&target); err != nil {
+			return nil, fmt.Errorf("failed to create target: %w", err)
+		}
+		project.Targets = append(project.Targets, target)
+	}
+
+	return project, nil
 }
 
 // ListAllProjects retrieves all projects.

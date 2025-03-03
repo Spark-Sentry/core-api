@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"core-api/internal/app/dto"
-	"core-api/internal/domain/entities"
 	"core-api/internal/domain/services"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -29,17 +28,9 @@ func (h *ProjectHandler) CreateProject(c *gin.Context) {
 		return
 	}
 
-	project := entities.Project{
-		BuildingID:         req.BuildingID,
-		Name:               req.Name,
-		ContractorID:       req.ContractorID,
-		ImplementationDate: req.ImplementationDate,
-		EfficiencyCost:     req.EfficiencyCost,
-		MaintenanceCost:    req.MaintenanceCost,
-	}
-
-	if err := h.projectService.CreateProject(&project); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create project"})
+	project, err := h.projectService.CreateProject(req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create project: " + err.Error()})
 		return
 	}
 

@@ -5,20 +5,19 @@ import (
 	"gorm.io/gorm"
 )
 
-// ParameterRepository handles database operations for parameters.
 type ParameterRepository interface {
 	Create(param *entities.Parameter) error
 	ListAll() ([]entities.Parameter, error)
 	FindByID(id uint) (*entities.Parameter, error)
 	Update(id uint, updateData map[string]interface{}) error
 	Delete(id uint) error
+	DB() *gorm.DB
 }
 
 type parameterRepository struct {
 	db *gorm.DB
 }
 
-// NewParameterRepository creates a new instance of ParameterRepository.
 func NewParameterRepository(db *gorm.DB) ParameterRepository {
 	return &parameterRepository{db: db}
 }
@@ -29,13 +28,13 @@ func (r *parameterRepository) Create(param *entities.Parameter) error {
 
 func (r *parameterRepository) ListAll() ([]entities.Parameter, error) {
 	var params []entities.Parameter
-	err := r.db.Find(&params).Error
+	err := r.db.Preload("EfficiencyMeasures").Find(&params).Error
 	return params, err
 }
 
 func (r *parameterRepository) FindByID(id uint) (*entities.Parameter, error) {
 	var param entities.Parameter
-	err := r.db.First(&param, id).Error
+	err := r.db.Preload("EfficiencyMeasures").First(&param, id).Error
 	if err != nil {
 		return nil, err
 	}
@@ -48,4 +47,8 @@ func (r *parameterRepository) Update(id uint, updateData map[string]interface{})
 
 func (r *parameterRepository) Delete(id uint) error {
 	return r.db.Delete(&entities.Parameter{}, id).Error
+}
+
+func (r *parameterRepository) DB() *gorm.DB {
+	return r.db
 }

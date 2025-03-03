@@ -29,7 +29,7 @@ func (h *SubsidyHandler) CreateSubsidy(c *gin.Context) {
 	}
 	subsidy, err := h.service.CreateSubsidy(req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create subsidy"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create subsidy: " + err.Error()})
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"message": "Subsidy created successfully", "subsidy": subsidy})

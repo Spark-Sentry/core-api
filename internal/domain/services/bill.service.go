@@ -7,7 +7,6 @@ import (
 	"fmt"
 )
 
-// BillService defines operations related to bills.
 type BillService interface {
 	CreateBill(req dto.CreateBillRequest) (*entities.Bill, error)
 	ListBills() ([]entities.Bill, error)
@@ -20,7 +19,6 @@ type billService struct {
 	repo repository.BillRepository
 }
 
-// NewBillService creates a new instance of BillService.
 func NewBillService(repo repository.BillRepository) BillService {
 	return &billService{
 		repo: repo,
@@ -29,11 +27,12 @@ func NewBillService(repo repository.BillRepository) BillService {
 
 func (s *billService) CreateBill(req dto.CreateBillRequest) (*entities.Bill, error) {
 	bill := &entities.Bill{
-		MeterID:  req.MeterID,
-		Start:    req.Start,
-		Stop:     req.Stop,
-		Quantity: req.Quantity,
-		Cost:     req.Cost,
+		BuildingID: req.BuildingID, // Now set
+		MeterID:    req.MeterID,
+		Start:      req.Start,
+		Stop:       req.Stop,
+		Quantity:   req.Quantity,
+		Cost:       req.Cost,
 	}
 	if err := s.repo.CreateBill(bill); err != nil {
 		return nil, fmt.Errorf("failed to create bill: %w", err)

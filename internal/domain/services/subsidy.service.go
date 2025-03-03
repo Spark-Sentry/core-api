@@ -27,14 +27,24 @@ func NewSubsidyService(repo repository.SubsidyRepository) SubsidyService {
 	}
 }
 
+// CreateSubsidy creates a new subsidy record based on the type provided.
 func (s *subsidyService) CreateSubsidy(req dto.CreateSubsidyRequest) (*entities.Subsidy, error) {
 	subsidy := &entities.Subsidy{
-		Organisation:        req.Organisation,
-		DateObtained:        req.DateObtained,
-		Amount:              req.Amount,
-		ProjectID:           req.ProjectID,
-		EfficiencyMeasureID: req.EfficiencyMeasureID,
+		Organisation: req.Organisation,
+		DateObtained: req.DateObtained,
+		Amount:       req.Amount,
 	}
+
+	// Set the correct foreign key based on the provided type.
+	switch req.Type {
+	case "project":
+		subsidy.ProjectID = &req.ID
+	case "efficiencyMeasure":
+		subsidy.EfficiencyMeasureID = &req.ID
+	default:
+		return nil, fmt.Errorf("invalid type: %s", req.Type)
+	}
+
 	if err := s.repo.CreateSubsidy(subsidy); err != nil {
 		return nil, fmt.Errorf("failed to create subsidy: %w", err)
 	}

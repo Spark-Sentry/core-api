@@ -57,7 +57,7 @@ func (h *AccountHandler) ListAllAccounts(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": accounts})
+	c.JSON(http.StatusOK, accounts)
 }
 
 // GetAccountByID retrieves an account by its ID.
@@ -74,7 +74,7 @@ func (h *AccountHandler) GetAccountByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": account})
+	c.JSON(http.StatusOK, account)
 }
 
 func (h *AccountHandler) AssociateUserToAccount(c *gin.Context) {

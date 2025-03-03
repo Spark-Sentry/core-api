@@ -17,13 +17,15 @@ type RegressionService interface {
 }
 
 type regressionService struct {
-	repo repository.RegressionRepository
+	repo      repository.RegressionRepository
+	meterRepo repository.MeterRepository
 }
 
 // NewRegressionService creates a new instance of RegressionService.
-func NewRegressionService(repo repository.RegressionRepository) RegressionService {
+func NewRegressionService(repo repository.RegressionRepository, meterRepo repository.MeterRepository) RegressionService {
 	return &regressionService{
-		repo: repo,
+		repo:      repo,
+		meterRepo: meterRepo,
 	}
 }
 
@@ -42,13 +44,13 @@ func (s *regressionService) CreateRegression(req dto.CreateRegressionRequest) (*
 		}
 		regression.Coefficients = append(regression.Coefficients, coef)
 	}
-	// Associate meters (assuming MeterIDs are stored as strings in a join table)
-	// Vous pouvez adapter cette logique selon votre modèle de données.
+
 	for _, meterID := range req.Meters {
-		m := entities.Meter{
-			MeterID: meterID,
+		meter, err := s.meterRepo.FindMeterByID(meterID)
+		if err != nil {
+			return nil, fmt.Errorf("meter with id %s not found: %w", meterID, err)
 		}
-		regression.Meters = append(regression.Meters, m)
+		regression.Meters = append(regression.Meters, *meter)
 	}
 
 	if err := s.repo.CreateRegression(regression); err != nil {

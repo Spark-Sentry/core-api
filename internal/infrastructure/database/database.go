@@ -159,6 +159,9 @@ func InitDB() {
 		&entities.Subsidy{},
 		&entities.Bill{},
 		&entities.Category{},
+		&entities.Equipment{},
+		&entities.Parameter{},
+		&entities.Coefficient{},
 	)
 	if err != nil {
 		log.Fatalf("Failed to auto-migrate database schemas: %v", err)

@@ -9,8 +9,8 @@ type AccountResponse struct {
 type UserResponse struct {
 	ID        uint            `json:"id"`
 	Email     string          `json:"email"`
-	FirstName string          `json:"firstName,omitempty"`
-	LastName  string          `json:"lastName,omitempty"`
+	FirstName string          `json:"first_name,omitempty"`
+	LastName  string          `json:"last_name,omitempty"`
 	Role      string          `json:"role,omitempty"`
 	Account   AccountResponse `json:"account,omitempty"`
 }

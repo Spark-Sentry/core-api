@@ -6,6 +6,7 @@ import (
 	"core-api/internal/domain/services"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 // BuildingHandler handles building-related HTTP requests.
@@ -75,4 +76,44 @@ func (h *BuildingHandler) GetAllBuildings(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, buildings)
+}
+
+// UpdateBuilding handles PUT /buildings/:id.
+func (h *BuildingHandler) UpdateBuilding(c *gin.Context) {
+	// Get the building ID from the URL.
+	idParam := c.Param("id")
+	buildingID, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid building ID"})
+		return
+	}
+
+	var req dto.UpdateBuildingRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Retrieve the authenticated user (to get accountId)
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	userDetails := user.(*entities.User)
+
+	// Build the updated building data.
+	updatedBuilding := entities.Building{
+		Name:       req.Name,
+		Address:    req.Address,
+		CategoryID: &req.CategoryID,
+	}
+
+	// Call the service to update the building.
+	if err := h.buildingService.UpdateBuilding(uint(buildingID), updatedBuilding, *userDetails.AccountID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update building: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Building updated successfully"})
 }
